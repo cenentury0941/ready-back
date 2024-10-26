@@ -35,6 +35,38 @@ describe("userService", () => {
     userServiceInstance = new UserService(userRepositoryInstance);
   });
 
+  describe("create", () => {
+    it("creates a new user successfully", async () => {
+      // Arrange
+      const newUser = { name: "Charlie", email: "charlie@example.com", age: 30 };
+      (userRepositoryInstance.createAsync as Mock).mockReturnValue({ id: 3, ...newUser });
+
+      // Act
+      const result = await userServiceInstance.create(newUser);
+
+      // Assert
+      expect(result.statusCode).toEqual(StatusCodes.CREATED);
+      expect(result.success).toBeTruthy();
+      expect(result.message).equals("User created successfully");
+      expect(result.responseObject).toEqual({ id: 3, ...newUser });
+    });
+
+    it("handles errors for createAsync", async () => {
+      // Arrange
+      const newUser = { name: "Charlie", email: "charlie@example.com", age: 30 };
+      (userRepositoryInstance.createAsync as Mock).mockRejectedValue(new Error("Database error"));
+
+      // Act
+      const result = await userServiceInstance.create(newUser);
+
+      // Assert
+      expect(result.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
+      expect(result.success).toBeFalsy();
+      expect(result.message).equals("An error occurred while creating user.");
+      expect(result.responseObject).toBeNull();
+    });
+  });
+
   describe("findAll", () => {
     it("return all users", async () => {
       // Arrange

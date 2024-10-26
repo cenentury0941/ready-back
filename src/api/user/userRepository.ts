@@ -27,4 +27,14 @@ export class UserRepository {
   async findByIdAsync(id: number): Promise<User | null> {
     return users.find((user) => user.id === id) || null;
   }
+  async createAsync(userData: Partial<User>): Promise<User> {
+    const newUser: User = {
+      id: users.length + 1,
+      ...userData,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as User;
+    users.push(newUser);
+    return newUser;
+  }
 }

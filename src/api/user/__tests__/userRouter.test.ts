@@ -22,7 +22,35 @@ describe("User API Endpoints", () => {
     });
   });
 
-  describe("GET /users/:id", () => {
+  describe("POST /users", () => {
+    it("should create a new user", async () => {
+      // Arrange
+      const newUser = { name: "Charlie", email: "charlie@example.com", age: 30 };
+
+      // Act
+      const response = await request(app).post("/users").send(newUser);
+      const responseBody: ServiceResponse<User> = response.body;
+
+      // Assert
+      expect(response.statusCode).toEqual(StatusCodes.CREATED);
+      expect(responseBody.success).toBeTruthy();
+      expect(responseBody.message).toContain("User created successfully");
+      expect(responseBody.responseObject).toMatchObject(newUser);
+    });
+
+    it("should return a bad request for invalid input", async () => {
+      // Act
+      const invalidUser = { name: "", email: "invalid-email", age: -1 };
+      const response = await request(app).post("/users").send(invalidUser);
+      const responseBody: ServiceResponse = response.body;
+
+      // Assert
+      expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+      expect(responseBody.success).toBeFalsy();
+      expect(responseBody.message).toContain("Invalid input");
+      expect(responseBody.responseObject).toBeNull();
+    });
+  });
     it("should return a user for a valid ID", async () => {
       // Arrange
       const testId = 1;
