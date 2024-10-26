@@ -33,7 +33,7 @@ orderRegistry.registerPath({
       name: "id",
       in: "path",
       required: true,
-      schema: { type: "integer" },
+      schema: { type: "string" },
     },
   ],
   responses: createApiResponse(OrderSchema, "Order found"),

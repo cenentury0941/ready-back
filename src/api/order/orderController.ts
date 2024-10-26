@@ -19,7 +19,7 @@ class OrderController {
   };
 
   public getOrderById: RequestHandler = async (req: Request, res: Response) => {
-    const orderId = parseInt(req.params.id, 10);
+    const orderId = req.params.id;
     const order = await orderRepository.findByIdAsync(orderId);
     if (order) {
       res.status(200).json(order);

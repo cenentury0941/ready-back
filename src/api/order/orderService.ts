@@ -78,7 +78,7 @@ export class OrderService {
   }
 
   // Retrieves a single order by its ID
-  async findById(id: number): Promise<ServiceResponse<Order | null>> {
+  async findById(id: string): Promise<ServiceResponse<Order | null>> {
     try {
       const order = await this.orderRepository.findByIdAsync(id);
       if (!order) {

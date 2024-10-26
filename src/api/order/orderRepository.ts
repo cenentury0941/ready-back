@@ -11,7 +11,7 @@ export class OrderRepository {
   async findByUserIdAsync(userId: number): Promise<Order[]> {
     return orders.filter(order => order.userId === userId);
   }
-  async findByIdAsync(id: number): Promise<Order | undefined> {
+  async findByIdAsync(id: string): Promise<Order | undefined> {
     return orders.find(order => order.id === id);
   }
 
