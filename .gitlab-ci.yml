@@ -24,6 +24,8 @@ build_image:
 deploy_to_ecs:
   stage: deploy
   script:
+    - echo "CLUSTER_NAME - $CLUSTER_NAME"
+    - echo "SERVICE_NAME - $SERVICE_NAME"
     - aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment
   only:
     - main
