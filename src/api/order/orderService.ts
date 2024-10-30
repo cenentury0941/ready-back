@@ -13,7 +13,7 @@ export class OrderService {
   }
 
   // Retrieves orders by user ID
-  async findByUserId(userId: number): Promise<ServiceResponse<Order[] | null>> {
+  async findByUserId(userId: string): Promise<ServiceResponse<Order[] | null>> {
     try {
       const orders = await this.orderRepository.findByUserIdAsync(userId);
       if (!orders || orders.length === 0) {
@@ -37,6 +37,7 @@ export class OrderService {
       const parsedOrderData = OrderSchema.omit({
         id: true,
         confirmationNumber: true,
+        status: true,
         createdAt: true,
         updatedAt: true,
       }).parse(orderData);
@@ -45,6 +46,7 @@ export class OrderService {
         ...parsedOrderData,
         id: uuidv4(),
         confirmationNumber: uuidv4(),
+        status: "Received",
         createdAt: new Date(),
         updatedAt: new Date(),
       };

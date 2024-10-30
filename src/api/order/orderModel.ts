@@ -2,11 +2,12 @@ import { z } from "zod";
 
 export const OrderSchema = z.object({
   id: z.string(),
-  userId: z.number(),
+  userId: z.string(),
   fullName: z.string(),
   location: z.string(),
   items: z.array(z.object({ productId: z.string() })),
   confirmationNumber: z.string(),
+  status: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -14,7 +15,7 @@ export const OrderSchema = z.object({
 
 export const CreateOrderSchema = z.object({
   body: z.object({
-    userId: z.number(),
+    userId: z.string(),
     fullName: z.string(),
     location: z.string(),
     items: z.array(z.object({ productId: z.string() })),

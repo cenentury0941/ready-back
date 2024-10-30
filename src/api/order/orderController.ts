@@ -6,14 +6,14 @@ import { OrderRepository } from "./orderRepository";
 const orderRepository = new OrderRepository();
 
 class OrderController {
-  public confirmOrder: RequestHandler = async (req: Request, res: Response) => {
+  public confirmOrder: RequestHandler =  async (req: Request, res: Response) => {
     const orderData = req.body;
     const serviceResponse = await orderService.confirmOrder(orderData);
     return handleServiceResponse(serviceResponse, res);
   };
 
   public getOrdersByUserId: RequestHandler = async (req: Request, res: Response) => {
-    const userId = parseInt(req.params.userId, 10);
+    const userId = req.params.userId;
     const serviceResponse = await orderService.findByUserId(userId);
     return handleServiceResponse(serviceResponse, res);
   };

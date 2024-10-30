@@ -55,7 +55,7 @@ orderRegistry.registerPath({
       name: "userId",
       in: "path",
       required: true,
-      schema: { type: "integer" },
+      schema: { type: "string" },
     },
   ],
   responses: createApiResponse(z.array(OrderSchema), "Orders found for user"),
