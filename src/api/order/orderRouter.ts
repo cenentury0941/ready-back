@@ -6,6 +6,7 @@ import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { OrderSchema, CreateOrderSchema } from "./orderModel";
 import { orderController } from "./orderController";
 import { validateRequest } from "@/common/utils/httpHandlers";
+import verifyAzureToken from "@/middleware/authMiddleware";
 
 export const orderRegistry = new OpenAPIRegistry();
 export const orderRouter: Router = express.Router();
@@ -61,7 +62,7 @@ orderRegistry.registerPath({
   responses: createApiResponse(z.array(OrderSchema), "Orders found for user"),
 });
 
-orderRouter.post("/", validateRequest(CreateOrderSchema), orderController.confirmOrder);
-orderRouter.get("/:id", orderController.getOrderById);
-orderRouter.get("/", orderController.getAllOrders);
-orderRouter.get("/user/:userId", orderController.getOrdersByUserId);
+orderRouter.post("/", verifyAzureToken, validateRequest(CreateOrderSchema), orderController.confirmOrder);
+orderRouter.get("/:id", verifyAzureToken, orderController.getOrderById);
+orderRouter.get("/", verifyAzureToken, orderController.getAllOrders);
+orderRouter.get("/user/:userId", verifyAzureToken, orderController.getOrdersByUserId);
