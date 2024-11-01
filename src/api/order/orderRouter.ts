@@ -3,10 +3,10 @@ import express, { type Router } from "express";
 import { z } from "zod";
 
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
-import { OrderSchema, CreateOrderSchema } from "./orderModel";
-import { orderController } from "./orderController";
 import { validateRequest } from "@/common/utils/httpHandlers";
 import verifyAzureToken from "@/middleware/authMiddleware";
+import { orderController } from "./orderController";
+import { CreateOrderSchema, OrderSchema } from "./orderModel";
 
 export const orderRegistry = new OpenAPIRegistry();
 export const orderRouter: Router = express.Router();
@@ -19,9 +19,11 @@ orderRegistry.registerPath({
   tags: ["Order"],
   request: {
     body: {
-      content: { 
-        "application/json" : { schema: CreateOrderSchema.shape.body },
-      }}},
+      content: {
+        "application/json": { schema: CreateOrderSchema.shape.body },
+      },
+    },
+  },
   responses: createApiResponse(OrderSchema, "Order accepted"),
 });
 
@@ -66,3 +68,15 @@ orderRouter.post("/", verifyAzureToken, validateRequest(CreateOrderSchema), orde
 orderRouter.get("/:id", verifyAzureToken, orderController.getOrderById);
 orderRouter.get("/", verifyAzureToken, orderController.getAllOrders);
 orderRouter.get("/user/:userId", verifyAzureToken, orderController.getOrdersByUserId);
+orderRouter.put(
+  "/:id/status",
+  verifyAzureToken,
+  validateRequest(
+    z.object({
+      body: z.object({
+        status: z.string(),
+      }),
+    }),
+  ),
+  orderController.updateOrderStatus,
+);

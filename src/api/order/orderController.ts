@@ -1,12 +1,12 @@
-import type { Request, RequestHandler, Response } from "express";
-import { orderService } from "./orderService";
 import { handleServiceResponse } from "@/common/utils/httpHandlers";
+import type { Request, RequestHandler, Response } from "express";
 import { OrderRepository } from "./orderRepository";
+import { orderService } from "./orderService";
 
 const orderRepository = new OrderRepository();
 
 class OrderController {
-  public confirmOrder: RequestHandler =  async (req: Request, res: Response) => {
+  public confirmOrder: RequestHandler = async (req: Request, res: Response) => {
     const orderData = req.body;
     const serviceResponse = await orderService.confirmOrder(orderData);
     return handleServiceResponse(serviceResponse, res);
@@ -31,6 +31,12 @@ class OrderController {
   public getAllOrders: RequestHandler = async (_req: Request, res: Response) => {
     const orders = await orderRepository.findAllAsync();
     res.status(200).json(orders);
+  };
+  public updateOrderStatus: RequestHandler = async (req: Request, res: Response) => {
+    const orderId = req.params.id;
+    const { status } = req.body;
+    const serviceResponse = await orderService.updateOrderStatus(orderId, status);
+    return handleServiceResponse(serviceResponse, res);
   };
 }
 

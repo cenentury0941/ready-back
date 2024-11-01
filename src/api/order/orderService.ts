@@ -1,9 +1,9 @@
-import { v4 as uuidv4 } from "uuid";
-import { OrderSchema, type Order } from "./orderModel";
-import { OrderRepository } from "./orderRepository";
 import { ServiceResponse } from "@/common/models/serviceResponse";
-import { StatusCodes } from "http-status-codes";
 import { logger } from "@/server";
+import { StatusCodes } from "http-status-codes";
+import { v4 as uuidv4 } from "uuid";
+import { type Order, OrderSchema } from "./orderModel";
+import { OrderRepository } from "./orderRepository";
 
 export class OrderService {
   private orderRepository: OrderRepository;
@@ -21,7 +21,7 @@ export class OrderService {
       }
       return ServiceResponse.success<Order[]>("Orders found for user", orders);
     } catch (ex) {
-      const errorMessage = `Error finding orders for user with id ${userId}: ${ex instanceof Error ? ex.message : 'Unknown error'}`;
+      const errorMessage = `Error finding orders for user with id ${userId}: ${ex instanceof Error ? ex.message : "Unknown error"}`;
       logger.error(errorMessage);
       return ServiceResponse.failure(
         "An error occurred while retrieving orders for user.",
@@ -54,7 +54,7 @@ export class OrderService {
       const savedOrder = await this.orderRepository.save(newOrder);
       return ServiceResponse.success<Order>("Order confirmed", savedOrder);
     } catch (error) {
-      const errorMessage = `Failed to confirm order: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      const errorMessage = `Failed to confirm order: ${error instanceof Error ? error.message : "Unknown error"}`;
       logger.error(errorMessage);
       return ServiceResponse.failure("Failed to confirm order", null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
@@ -69,10 +69,30 @@ export class OrderService {
       }
       return ServiceResponse.success<Order[]>("Orders found", orders);
     } catch (ex) {
-      const errorMessage = `Error finding all orders: ${ex instanceof Error ? ex.message : 'Unknown error'}`;
+      const errorMessage = `Error finding all orders: ${ex instanceof Error ? ex.message : "Unknown error"}`;
       logger.error(errorMessage);
       return ServiceResponse.failure(
         "An error occurred while retrieving orders.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async updateOrderStatus(id: string, newStatus: string): Promise<ServiceResponse<Order | null>> {
+    try {
+      const order = await this.orderRepository.findByIdAsync(id);
+      if (!order) {
+        return ServiceResponse.failure("Order not found", null, StatusCodes.NOT_FOUND);
+      }
+      order.status = newStatus; // Update the status
+      const updatedOrder = await this.orderRepository.updateStatus(id, newStatus);
+      return ServiceResponse.success<Order>("Order status updated", order);
+    } catch (ex) {
+      const errorMessage = `Error updating order status for order with id ${id}: ${ex instanceof Error ? ex.message : "Unknown error"}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while updating order status.",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR,
       );
@@ -88,7 +108,7 @@ export class OrderService {
       }
       return ServiceResponse.success<Order>("Order found", order);
     } catch (ex) {
-      const errorMessage = `Error finding order with id ${id}: ${ex instanceof Error ? ex.message : 'Unknown error'}`;
+      const errorMessage = `Error finding order with id ${id}: ${ex instanceof Error ? ex.message : "Unknown error"}`;
       logger.error(errorMessage);
       return ServiceResponse.failure("An error occurred while finding order.", null, StatusCodes.INTERNAL_SERVER_ERROR);
     }

@@ -1,4 +1,4 @@
-import { MongoClient, Db, Collection, WithId, ObjectId } from "mongodb";
+import { type Collection, type Db, MongoClient, ObjectId, type UpdateResult, type WithId } from "mongodb";
 import type { Order } from "./orderModel";
 
 let db: Db;
@@ -24,6 +24,11 @@ export class OrderRepository {
     return order;
   }
 
+  async updateStatus(id: string, newStatus: string): Promise<UpdateResult> {
+    await connectToDatabase();
+    return await ordersCollection.updateOne({ id: id }, { $set: { status: newStatus, updatedAt: new Date() } });
+  }
+
   async findByUserIdAsync(userId: string): Promise<Order[]> {
     await connectToDatabase();
     return ordersCollection.find({ userId: userId }).toArray();
@@ -31,8 +36,7 @@ export class OrderRepository {
 
   async findByIdAsync(id: string): Promise<WithId<Order> | null> {
     await connectToDatabase();
-    const sanitizedId = new ObjectId(id);
-    return ordersCollection.findOne({ _id: sanitizedId });
+    return ordersCollection.findOne({ id: id });
   }
 
   async findAllAsync(): Promise<Order[]> {
