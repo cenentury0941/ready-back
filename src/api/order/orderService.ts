@@ -34,6 +34,17 @@ export class OrderService {
   // Confirms an order and saves it to the database
   async confirmOrder(orderData: Partial<Order>): Promise<ServiceResponse<Order | null>> {
     try {
+      // Check if the order contains more than one book
+      if (orderData.items.length > 1) {
+        return ServiceResponse.failure("An order can only contain one book", null, StatusCodes.BAD_REQUEST);
+      }
+
+      // Check if the user already has an order
+      const existingOrders = await this.orderRepository.findByUserIdAsync(orderData.userId);
+      if (existingOrders.length > 0) {
+        return ServiceResponse.failure("Only one book can be purchased by a user", null, StatusCodes.BAD_REQUEST);
+      }
+
       const parsedOrderData = OrderSchema.omit({
         id: true,
         confirmationNumber: true,
