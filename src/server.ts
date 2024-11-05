@@ -10,6 +10,7 @@ import errorHandler from "@/common/middleware/errorHandler";
 import rateLimiter from "@/common/middleware/rateLimiter";
 import requestLogger from "@/common/middleware/requestLogger";
 import { env } from "@/common/utils/envConfig";
+import { bookRouter } from "./api/books/bookRouter";
 import { orderRouter } from "./api/order/orderRouter";
 
 const logger = pino({ name: "server start" });
@@ -31,7 +32,8 @@ app.use(requestLogger);
 // Routes
 app.use("/health-check", healthCheckRouter);
 app.use("/users", userRouter);
-app.use("/orders", orderRouter); 
+app.use("/orders", orderRouter);
+app.use("/books", bookRouter);
 // Swagger UI
 app.use(openAPIRouter);
 
