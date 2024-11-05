@@ -2,6 +2,7 @@ import { ServiceResponse } from "@/common/models/serviceResponse";
 import { logger } from "@/server";
 import { StatusCodes } from "http-status-codes";
 import { v4 as uuidv4 } from "uuid";
+import { updateBookQuantity } from "../books/bookRepository";
 import { type Order, OrderSchema } from "./orderModel";
 import { OrderRepository } from "./orderRepository";
 
@@ -44,6 +45,15 @@ export class OrderService {
       if (existingOrders.length > 0) {
         return ServiceResponse.failure("Only one book can be purchased by a user", null, StatusCodes.BAD_REQUEST);
       }
+      console.log("order service - items:", orderData.items);
+      for (let i = 0; i < orderData.items.length; i++) {
+        const bookId = orderData.items[i].productId;
+        const quantity = orderData.items[i].quantity ? orderData.items[i].quantity : 1;
+        const isUpdated = await updateBookQuantity(bookId, quantity);
+        if (!isUpdated) {
+          return ServiceResponse.failure("Insufficient quantity available", null, StatusCodes.BAD_REQUEST);
+        }
+      }
 
       const parsedOrderData = OrderSchema.omit({
         id: true,
@@ -66,7 +76,7 @@ export class OrderService {
       return ServiceResponse.success<Order>("Order confirmed", savedOrder);
     } catch (error) {
       const errorMessage = `Failed to confirm order: ${error instanceof Error ? error.message : "Unknown error"}`;
-      logger.error(errorMessage);
+      logger.error(error);
       return ServiceResponse.failure("Failed to confirm order", null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
