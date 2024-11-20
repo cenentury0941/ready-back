@@ -1,9 +1,70 @@
+import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Request, type Response, type Router } from "express";
-import { fetchBooks } from "./bookService";
+import BookController from "./bookController";
 
 export const bookRouter: Router = express.Router();
+const bookController = new BookController();
 
-bookRouter.get("/", async (req: Request, res: Response) => {
-  const books = await fetchBooks();
-  res.json(books);
+// Define the OpenAPI registry for books
+export const bookRegistry = new OpenAPIRegistry();
+
+// Existing route definitions...
+
+// Add route definition for adding a note to a book
+bookRegistry.registerPath({
+  method: "post",
+  path: "/books/{id}/notes",
+  description: "Add a note to a book",
+  tags: ["Books"],
+  parameters: [
+    {
+      name: "id",
+      in: "path",
+      required: true,
+      schema: { type: "string" },
+    },
+  ],
+  requestBody: {
+    required: true,
+    content: {
+      "application/json": {
+        schema: {
+          type: "object",
+          required: ["text", "contributor"],
+          properties: {
+            text: { type: "string" },
+            contributor: { type: "string" },
+            imageUrl: { type: "string" },
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "Note added successfully",
+      content: {
+        "application/json": {
+          schema: { type: "object", properties: { message: { type: "string" } } },
+        },
+      },
+    },
+    400: {
+      description: "Invalid request",
+    },
+    500: {
+      description: "Server error",
+    },
+  },
 });
+
+// Existing routes...
+
+bookRouter.get("/", (req: Request, res: Response) => bookController.getBooks(req, res));
+bookRouter.get("/:id", (req: Request, res: Response) => bookController.getBookById(req, res));
+bookRouter.post("/", (req: Request, res: Response) => bookController.createBook(req, res));
+bookRouter.put("/:id", (req: Request, res: Response) => bookController.updateBook(req, res));
+bookRouter.delete("/:id", (req: Request, res: Response) => bookController.deleteBook(req, res));
+
+// Add the new route for adding a note to a book
+bookRouter.post("/:id/notes", (req: Request, res: Response) => bookController.addNoteToBook(req, res));
