@@ -1,5 +1,5 @@
 import { config } from "dotenv";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb"; // Removed ModifyResult import
 import type { Book } from "./bookModel";
 
 config();
@@ -31,7 +31,22 @@ export const getBooks = async (): Promise<Book[]> => {
 export const getBookById = async (bookId: string): Promise<Book | null> => {
   const { client, collection } = await connectToDatabase();
   try {
-    const book = await collection.findOne({ id: bookId });
+    const queryId = bookId.trim();
+    let book: Book | null = null;
+
+    // Try to find by '_id'
+    try {
+      const objectId = new ObjectId(queryId);
+      book = await collection.findOne({ _id: objectId });
+    } catch (err) {
+      // If invalid ObjectId, ignore and try by 'id' field
+    }
+
+    // If not found, try to find by 'id' field
+    if (!book) {
+      book = await collection.findOne({ id: queryId });
+    }
+
     return book;
   } catch (error) {
     console.error("Error fetching book by ID:", error);
@@ -41,25 +56,49 @@ export const getBookById = async (bookId: string): Promise<Book | null> => {
   }
 };
 
-export const updateBookQuantity = async (bookId: string, quantity: number): Promise<boolean> => {
+export const updateBook = async (bookId: string, updateData: Partial<Book>): Promise<Book | null> => {
   const { client, collection } = await connectToDatabase();
   try {
-    const book = await collection.findOne({ id: bookId });
-    if (!book || book.qty < quantity) {
-      return false; // Not enough quantity available
+    const queryId = bookId.trim();
+    let updatedBook: Book | null = null;
+
+    // Try to update by '_id'
+    try {
+      const objectId = new ObjectId(queryId);
+      const result = await collection.findOneAndUpdate(
+        { _id: objectId },
+        { $set: updateData },
+        { returnDocument: "after" },
+      );
+      if (result) {
+        updatedBook = result;
+      }
+    } catch (err) {
+      // If invalid ObjectId, ignore and try by 'id' field
     }
 
-    await collection.updateOne({ id: bookId }, { $inc: { qty: -quantity } });
+    // If not updated, try to update by 'id' field
+    if (!updatedBook) {
+      const result = await collection.findOneAndUpdate(
+        { id: queryId },
+        { $set: updateData },
+        { returnDocument: "after" },
+      );
+      if (result) {
+        updatedBook = result;
+      }
+    }
 
-    return true; // Quantity updated successfully
+    return updatedBook;
   } catch (error) {
-    console.error("Error updating book quantity:", error);
-    throw new Error("Failed to update book quantity");
+    console.error("Error updating book:", error);
+    throw new Error("Failed to update book");
   } finally {
     await client.close();
   }
 };
 
+// Other functions remain unchanged
 export const addNoteToBook = async (
   bookId: string,
   note: { text: string; contributor: string; imageUrl: string },

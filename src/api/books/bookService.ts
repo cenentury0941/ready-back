@@ -1,5 +1,10 @@
 import type { Book } from "./bookModel";
-import { addNoteToBook as addNoteToBookInRepo, getBookById as getBookByIdFromRepo, getBooks } from "./bookRepository";
+import {
+  addNoteToBook as addNoteToBookInRepo,
+  getBookById as getBookByIdFromRepo,
+  getBooks,
+  updateBook as updateBookInRepo,
+} from "./bookRepository";
 
 class BookService {
   public async getAllBooks(): Promise<Book[]> {
@@ -20,8 +25,8 @@ class BookService {
   }
 
   public async updateBook(id: string, bookData: Partial<Book>): Promise<Book | null> {
-    // Implement logic to update a book
-    return null;
+    const updatedBook = await updateBookInRepo(id, bookData);
+    return updatedBook;
   }
 
   public async deleteBook(id: string): Promise<boolean> {
