@@ -1,6 +1,6 @@
 import { config } from "dotenv";
 import { MongoClient, ObjectId } from "mongodb"; // Removed ModifyResult import
-import type { Book } from "./bookModel";
+import type { Book, Note } from "./bookModel";
 
 config();
 
@@ -98,14 +98,22 @@ export const updateBook = async (bookId: string, updateData: Partial<Book>): Pro
   }
 };
 
-// Other functions remain unchanged
 export const addNoteToBook = async (
   bookId: string,
   note: { text: string; contributor: string; imageUrl: string },
 ): Promise<void> => {
   const { client, collection } = await connectToDatabase();
   try {
-    await collection.updateOne({ id: bookId }, { $push: { notes: note } });
+    const book = await collection.findOne({ id: bookId });
+    if (book) {
+      const existingNote = book.notes?.find((n: Note) => n.contributor === note.contributor);
+      if (existingNote) {
+        throw new Error("Contributor has already added a note to this book.");
+      }
+      await collection.updateOne({ id: bookId }, { $push: { notes: note } });
+    } else {
+      throw new Error("Book not found.");
+    }
   } catch (error) {
     console.error("Error adding note to book:", error);
     throw new Error("Failed to add note to book");
