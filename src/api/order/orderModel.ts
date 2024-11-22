@@ -1,25 +1,31 @@
+import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 
-export const OrderSchema = z.object({
-  id: z.string(),
-  userId: z.string(),
-  fullName: z.string(),
-  location: z.string(),
-  items: z.array(z.object({ productId: z.string() })),
-  confirmationNumber: z.string(),
-  status: z.string(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-});
+extendZodWithOpenApi(z);
 
+export const OrderSchema = z.object({
+  id: z.string().openapi({ description: "Order ID" }),
+  userId: z.string().openapi({ description: "User ID" }),
+  fullName: z.string().openapi({ description: "Full name of the user" }),
+  location: z.string().openapi({ description: "Location of the order" }),
+  items: z
+    .array(z.object({ productId: z.string().openapi({ description: "Product ID" }) }))
+    .openapi({ description: "List of items" }),
+  confirmationNumber: z.string().openapi({ description: "Confirmation number" }),
+  status: z.string().openapi({ description: "Order status" }),
+  createdAt: z.date().openapi({ description: "Creation date" }),
+  updatedAt: z.date().openapi({ description: "Last update date" }),
+});
 
 export const CreateOrderSchema = z.object({
   body: z.object({
-    userId: z.string(),
-    fullName: z.string(),
-    location: z.string(),
-    items: z.array(z.object({ productId: z.string() })),
-  })
-})
+    userId: z.string().openapi({ description: "User ID" }),
+    fullName: z.string().openapi({ description: "Full name of the user" }),
+    location: z.string().openapi({ description: "Location of the order" }),
+    items: z
+      .array(z.object({ productId: z.string().openapi({ description: "Product ID" }) }))
+      .openapi({ description: "List of items" }),
+  }),
+});
 
 export type Order = z.infer<typeof OrderSchema>;

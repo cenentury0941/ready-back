@@ -2,16 +2,18 @@ import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Router } from "express";
 import { z } from "zod";
 
-import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
-import { validateRequest } from "@/common/utils/httpHandlers";
-import verifyAzureToken from "@/middleware/authMiddleware";
+import { createApiResponse } from "../../api-docs/openAPIResponseBuilders";
+import { validateRequest } from "../../common/utils/httpHandlers";
+import verifyAzureToken from "../../middleware/authMiddleware";
 import { orderController } from "./orderController";
 import { CreateOrderSchema, OrderSchema } from "./orderModel";
 
 export const orderRegistry = new OpenAPIRegistry();
 export const orderRouter: Router = express.Router();
 
+// Register Zod schemas with OpenAPIRegistry
 orderRegistry.register("Order", OrderSchema);
+orderRegistry.register("CreateOrder", CreateOrderSchema);
 
 orderRegistry.registerPath({
   method: "post",

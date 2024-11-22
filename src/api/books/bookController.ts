@@ -1,0 +1,92 @@
+import type { Request, Response } from "express";
+import BookService from "./bookService";
+
+class BookController {
+  private bookService: BookService;
+
+  constructor() {
+    this.bookService = new BookService();
+  }
+
+  public async getBooks(req: Request, res: Response): Promise<void> {
+    try {
+      const books = await this.bookService.getAllBooks();
+      res.status(200).json(books);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch books" });
+    }
+  }
+
+  public async getBookById(req: Request, res: Response): Promise<void> {
+    try {
+      const bookId = req.params.id;
+      const book = await this.bookService.getBookById(bookId);
+      if (book) {
+        res.status(200).json(book);
+      } else {
+        res.status(404).json({ error: "Book not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch book" });
+    }
+  }
+
+  public async addNoteToBook(req: Request, res: Response): Promise<void> {
+    try {
+      const bookId = req.params.id;
+      const noteData = req.body;
+
+      // Validate noteData
+      if (!noteData.text || !noteData.contributor) {
+        res.status(400).json({ error: "Note text and contributor are required" });
+        return;
+      }
+
+      await this.bookService.addNoteToBook(bookId, noteData);
+      res.status(201).json({ message: "Note added successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to add note to book" });
+    }
+  }
+
+  public async createBook(req: Request, res: Response): Promise<void> {
+    try {
+      const bookData = req.body;
+      const newBook = await this.bookService.createBook(bookData);
+      res.status(201).json(newBook);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create book" });
+    }
+  }
+
+  public async updateBook(req: Request, res: Response): Promise<void> {
+    try {
+      const bookId = req.params.id;
+      const bookData = req.body;
+      const updatedBook = await this.bookService.updateBook(bookId, bookData);
+      if (updatedBook) {
+        res.status(200).json(updatedBook);
+      } else {
+        res.status(404).json({ error: "Book not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update book" });
+    }
+  }
+
+  public async deleteBook(req: Request, res: Response): Promise<void> {
+    try {
+      const bookId = req.params.id;
+      const isDeleted = await this.bookService.deleteBook(bookId);
+      if (isDeleted) {
+        res.status(204).send();
+      } else {
+        res.status(404).json({ error: "Book not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete book" });
+    }
+  }
+}
+
+export default BookController;

@@ -1,10 +1,15 @@
-import { ServiceResponse } from "@/common/models/serviceResponse";
-import { logger } from "@/server";
 import { StatusCodes } from "http-status-codes";
 import { v4 as uuidv4 } from "uuid";
-import { updateBookQuantity } from "../books/bookRepository";
+import { ServiceResponse } from "../../common/models/serviceResponse";
+import { logger } from "../../server";
+import { updateBook } from "../books/bookRepository";
 import { type Order, OrderSchema } from "./orderModel";
 import { OrderRepository } from "./orderRepository";
+
+interface OrderItem {
+  productId: string;
+  quantity: number;
+}
 
 export class OrderService {
   private orderRepository: OrderRepository;
@@ -33,8 +38,12 @@ export class OrderService {
   }
 
   // Confirms an order and saves it to the database
-  async confirmOrder(orderData: Partial<Order>): Promise<ServiceResponse<Order | null>> {
+  async confirmOrder(orderData: Partial<Order & { items: OrderItem[] }>): Promise<ServiceResponse<Order | null>> {
     try {
+      if (!orderData.items || orderData.items.length === 0) {
+        return ServiceResponse.failure("Order must contain at least one item", null, StatusCodes.BAD_REQUEST);
+      }
+
       // Check if the order contains more than one book
       if (orderData.items.length > 1) {
         return ServiceResponse.failure("An order can only contain one book", null, StatusCodes.BAD_REQUEST);
@@ -48,8 +57,11 @@ export class OrderService {
       console.log("order service - items:", orderData.items);
       for (let i = 0; i < orderData.items.length; i++) {
         const bookId = orderData.items[i].productId;
-        const quantity = orderData.items[i].quantity ? orderData.items[i].quantity : 1;
-        const isUpdated = await updateBookQuantity(bookId, quantity);
+        if (!bookId) {
+          return ServiceResponse.failure("Product ID is required", null, StatusCodes.BAD_REQUEST);
+        }
+        const quantity = orderData.items[i].quantity;
+        const isUpdated = await updateBook(bookId, { qty: quantity });
         if (!isUpdated) {
           return ServiceResponse.failure("Insufficient quantity available", null, StatusCodes.BAD_REQUEST);
         }
