@@ -115,6 +115,47 @@ bookRegistry.registerPath({
   },
 });
 
+// Add route definition for deleting a note from a book
+bookRegistry.registerPath({
+  method: "delete",
+  path: "/books/{id}/notes/{noteIndex}",
+  description: "Delete a note from a book",
+  tags: ["Books"],
+  parameters: [
+    {
+      name: "id",
+      in: "path",
+      required: true,
+      schema: { type: "string" },
+    },
+    {
+      name: "noteIndex",
+      in: "path",
+      required: true,
+      schema: { type: "integer" },
+    },
+  ],
+  responses: {
+    200: {
+      description: "Note deleted successfully",
+      content: {
+        "application/json": {
+          schema: { type: "object", properties: { message: { type: "string" } } },
+        },
+      },
+    },
+    404: {
+      description: "Note not found",
+    },
+    400: {
+      description: "Invalid request",
+    },
+    500: {
+      description: "Server error",
+    },
+  },
+});
+
 // Existing routes...
 
 bookRouter.get("/", (req: Request, res: Response) => bookController.getBooks(req, res));
@@ -128,3 +169,6 @@ bookRouter.post("/:id/notes", (req: Request, res: Response) => bookController.ad
 
 // Add the new route for updating a note in a book
 bookRouter.put("/:id/notes/:noteIndex", (req: Request, res: Response) => bookController.updateNoteInBook(req, res));
+
+// Add the new route for deleting a note from a book
+bookRouter.delete("/:id/notes/:noteIndex", (req: Request, res: Response) => bookController.deleteNoteFromBook(req, res));

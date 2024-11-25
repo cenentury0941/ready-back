@@ -149,3 +149,26 @@ export const updateNoteInBook = async (
     await client.close();
   }
 };
+
+export const deleteNoteFromBook = async (bookId: string, noteIndex: number): Promise<boolean> => {
+  const { client, collection } = await connectToDatabase();
+  try {
+    const book = await collection.findOne({ id: bookId });
+    if (book && book.notes && book.notes[noteIndex]) {
+      const updatedNotes = book.notes.filter((_, index) => index !== noteIndex);
+      const updateResult = await collection.updateOne(
+        { id: bookId },
+        { $set: { notes: updatedNotes } }
+      );
+      return updateResult.modifiedCount > 0;
+    } else {
+      console.error("Note not found.");
+      throw new Error("Note not found.");
+    }
+  } catch (error) {
+    console.error("Error deleting note from book:", error);
+    throw new Error("Failed to delete note from book");
+  } finally {
+    await client.close();
+  }
+};

@@ -72,6 +72,22 @@ class BookController {
     }
   }
 
+  public async deleteNoteFromBook(req: Request, res: Response): Promise<void> {
+    try {
+      const bookId = req.params.id;
+      const noteIndex = parseInt(req.params.noteIndex, 10);
+
+      const isDeleted = await this.bookService.deleteNoteFromBook(bookId, noteIndex);
+      if (isDeleted) {
+        res.status(200).json({ message: "Note deleted successfully" });
+      } else {
+        res.status(404).json({ error: "Note not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete note from book" });
+    }
+  }
+
   public async createBook(req: Request, res: Response): Promise<void> {
     try {
       const bookData = req.body;
