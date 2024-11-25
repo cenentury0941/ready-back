@@ -49,6 +49,29 @@ class BookController {
     }
   }
 
+  public async updateNoteInBook(req: Request, res: Response): Promise<void> {
+    try {
+      const bookId = req.params.id;
+      const noteIndex = parseInt(req.params.noteIndex, 10);
+      const noteData = req.body;
+
+      // Validate noteData
+      if (!noteData.text || !noteData.contributor) {
+        res.status(400).json({ error: "Note text and contributor are required" });
+        return;
+      }
+
+      const updatedNote = await this.bookService.updateNoteInBook(bookId, noteIndex, noteData);
+      if (updatedNote) {
+        res.status(200).json({ message: "Note updated successfully" });
+      } else {
+        res.status(404).json({ error: "Note not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update note in book" });
+    }
+  }
+
   public async createBook(req: Request, res: Response): Promise<void> {
     try {
       const bookData = req.body;

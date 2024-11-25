@@ -121,3 +121,31 @@ export const addNoteToBook = async (
     await client.close();
   }
 };
+
+export const updateNoteInBook = async (
+  bookId: string,
+  noteIndex: number,
+  note: { text: string; contributor: string; imageUrl: string },
+): Promise<boolean> => {
+  const { client, collection } = await connectToDatabase();
+  try {
+    console.log(`Updating note at index ${noteIndex} for book ID ${bookId}`);
+    const book = await collection.findOne({ id: bookId });
+    if (book && book.notes && book.notes[noteIndex]) {
+      const updateResult = await collection.updateOne(
+        { id: bookId, [`notes.${noteIndex}`]: { $exists: true } },
+        { $set: { [`notes.${noteIndex}`]: note } }
+      );
+      console.log(`Update result: ${updateResult.modifiedCount} document(s) modified.`);
+      return updateResult.modifiedCount > 0;
+    } else {
+      console.error("Note not found.");
+      throw new Error("Note not found.");
+    }
+  } catch (error) {
+    console.error("Error updating note in book:", error);
+    throw new Error("Failed to update note in book");
+  } finally {
+    await client.close();
+  }
+};

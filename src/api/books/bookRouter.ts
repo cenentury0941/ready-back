@@ -58,6 +58,63 @@ bookRegistry.registerPath({
   },
 });
 
+// Add route definition for updating a note in a book
+bookRegistry.registerPath({
+  method: "put",
+  path: "/books/{id}/notes/{noteIndex}",
+  description: "Update a note in a book",
+  tags: ["Books"],
+  parameters: [
+    {
+      name: "id",
+      in: "path",
+      required: true,
+      schema: { type: "string" },
+    },
+    {
+      name: "noteIndex",
+      in: "path",
+      required: true,
+      schema: { type: "integer" },
+    },
+  ],
+  requestBody: {
+    required: true,
+    content: {
+      "application/json": {
+        schema: {
+          type: "object",
+          required: ["text", "contributor"],
+          properties: {
+            text: { type: "string" },
+            contributor: { type: "string" },
+            imageUrl: { type: "string" },
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "Note updated successfully",
+      content: {
+        "application/json": {
+          schema: { type: "object", properties: { message: { type: "string" } } },
+        },
+      },
+    },
+    404: {
+      description: "Note not found",
+    },
+    400: {
+      description: "Invalid request",
+    },
+    500: {
+      description: "Server error",
+    },
+  },
+});
+
 // Existing routes...
 
 bookRouter.get("/", (req: Request, res: Response) => bookController.getBooks(req, res));
@@ -68,3 +125,6 @@ bookRouter.delete("/:id", (req: Request, res: Response) => bookController.delete
 
 // Add the new route for adding a note to a book
 bookRouter.post("/:id/notes", (req: Request, res: Response) => bookController.addNoteToBook(req, res));
+
+// Add the new route for updating a note in a book
+bookRouter.put("/:id/notes/:noteIndex", (req: Request, res: Response) => bookController.updateNoteInBook(req, res));

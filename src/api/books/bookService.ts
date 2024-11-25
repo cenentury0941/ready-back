@@ -4,6 +4,7 @@ import {
   getBookById as getBookByIdFromRepo,
   getBooks,
   updateBook as updateBookInRepo,
+  updateNoteInBook as updateNoteInBookInRepo,
 } from "./bookRepository";
 
 class BookService {
@@ -17,6 +18,10 @@ class BookService {
 
   public async addNoteToBook(id: string, note: { text: string; contributor: string; imageUrl: string }): Promise<void> {
     await addNoteToBookInRepo(id, note);
+  }
+
+  public async updateNoteInBook(id: string, noteIndex: number, note: { text: string; contributor: string; imageUrl: string }): Promise<boolean> {
+    return await updateNoteInBookInRepo(id, noteIndex, note);
   }
 
   public async createBook(bookData: Partial<Book>): Promise<Book> {
