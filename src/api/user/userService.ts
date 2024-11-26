@@ -4,6 +4,22 @@ import type { User } from "@/api/user/userModel";
 import { UserRepository } from "@/api/user/userRepository";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { logger } from "@/server";
+import { S3Client, PutObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import fs from "fs";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+
+const s3 = new S3Client({
+  region: 'us-east-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    sessionToken: process.env.AWS_SESSION_TOKEN!,
+  },
+});
+
 
 export class UserService {
   private userRepository: UserRepository;
@@ -54,6 +70,71 @@ export class UserService {
       const errorMessage = `Error creating user: ${(ex as Error).message}`;
       logger.error(errorMessage);
       return ServiceResponse.failure("An error occurred while creating user.", null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async uploadPhoto(photoId: string, file: any): Promise<ServiceResponse<{ url: string } | null>> {
+    try {
+      if (!file) {
+          return ServiceResponse.failure("No file provided", null, StatusCodes.INTERNAL_SERVER_ERROR);
+      }
+
+      // S3 object key
+      const objectKey = `${photoId}`;
+
+      // Check if the object already exists in S3
+      try {
+        const headCommand = new HeadObjectCommand({
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: objectKey,
+        });
+        await s3.send(headCommand);
+
+        // If the object exists, return its URL
+        const existingUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${objectKey}`;
+        return ServiceResponse.success("Photo already exists", { url: existingUrl });
+      } catch (error: any) {
+        if (error.name !== "NotFound") {
+          console.error("Error checking if photo exists:", error);
+          return ServiceResponse.failure("Error checking if photo exists", null, 500);
+        }
+      }
+
+      // Read the uploaded file
+      const fileContent = fs.readFileSync(file.path);
+
+      // S3 upload parameters
+      const params = {
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: objectKey, 
+        Body: fileContent,
+        ContentType: file.mimetype,
+      };
+
+      // Upload the file to S3
+      const command = new PutObjectCommand(params);
+      await s3.send(command);
+
+      // Construct file URL
+      const url = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/user-photos/${objectKey}`;
+
+      return ServiceResponse.success("Photo uploaded successfully", { url });
+
+    } catch (error) {
+      console.error("Error uploading photo:", error);
+      return ServiceResponse.failure("Error uploading photo", null, 500);
+    }
+    finally {
+      // Cleanup the temporary file
+      if (file?.path) {
+        fs.unlink(file.path, (err) => {
+            if (err) {
+                console.error(`Error deleting temporary file at ${file.path}:`, err);
+            } else {
+                console.log(`Temporary file ${file.path} deleted.`);
+            }
+        });
+      }
     }
   }
 }

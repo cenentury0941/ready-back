@@ -19,6 +19,14 @@ class UserController {
     const serviceResponse = await userService.create(req.body);
     return handleServiceResponse(serviceResponse, res);
   }];
+
+  public uploadPhoto: RequestHandler[] = [authenticate,async (req: Request, res: Response) => {
+      const { photoId } = req.params;
+      const file = req.file;
+      const serviceResponse = await userService.uploadPhoto(photoId, file);
+      return handleServiceResponse(serviceResponse, res);
+    },
+  ];
 }
 
 export const userController = new UserController();
