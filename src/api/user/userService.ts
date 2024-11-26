@@ -11,14 +11,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 
-const s3 = new S3Client({
-  region: 'us-east-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    sessionToken: process.env.AWS_SESSION_TOKEN!,
-  },
-});
+const s3 = new S3Client({region: 'us-east-1'});
 
 
 export class UserService {
@@ -116,7 +109,7 @@ export class UserService {
       await s3.send(command);
 
       // Construct file URL
-      const url = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/user-photos/${objectKey}`;
+      const url = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${objectKey}`;
 
       return ServiceResponse.success("Photo uploaded successfully", { url });
 
