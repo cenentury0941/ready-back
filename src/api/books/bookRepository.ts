@@ -172,3 +172,21 @@ export const deleteNoteFromBook = async (bookId: string, noteIndex: number): Pro
     await client.close();
   }
 };
+
+export const createBookInRepo = async (  
+  bookData: Book
+): Promise<any> => {
+
+  const { client, collection } = await connectToDatabase();
+  try {
+    const resposne =  await collection.insertOne(bookData);
+    return {id:resposne.insertedId,...bookData};
+  } catch(error) {
+    console.error("Error adding Book", error);
+    throw new Error("Failed to add book");
+  }
+  finally {
+    await client.close();
+   }
+ 
+}

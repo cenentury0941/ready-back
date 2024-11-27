@@ -1,3 +1,4 @@
+import { ServiceResponse } from "@/common/models/serviceResponse";
 import type { Book } from "./bookModel";
 import {
   addNoteToBook as addNoteToBookInRepo,
@@ -6,7 +7,13 @@ import {
   updateBook as updateBookInRepo,
   updateNoteInBook as updateNoteInBookInRepo,
   deleteNoteFromBook as deleteNoteFromBookInRepo,
+  createBookInRepo,
 } from "./bookRepository";
+import { StatusCodes } from "http-status-codes";
+import fs from "fs";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+
+const s3 = new S3Client({region: 'us-east-1'});
 
 class BookService {
   public async getAllBooks(): Promise<Book[]> {
@@ -29,9 +36,45 @@ class BookService {
     return await deleteNoteFromBookInRepo(id, noteIndex);
   }
 
-  public async createBook(bookData: Partial<Book>): Promise<Book> {
-    // Implement logic to create a new book
-    return {} as Book;
+  static async createBook(bookData: Partial<Book>, file:any): Promise<void> {
+    try {
+      if (!file) {
+           ServiceResponse.failure("No file provided", null, StatusCodes.INTERNAL_SERVER_ERROR);
+      }
+      const thumbnail_name = (bookData.title?.replace(/ /g, '_'));
+      const objectKey =  `books/thumbnails/${thumbnail_name}.png`;
+      const fileContent = fs.readFileSync(file.path);
+    
+      const params = {
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: objectKey, 
+        Body: fileContent,
+        ContentType: file.mimetype,
+      };
+
+      // Upload the file to S3
+      const command = new PutObjectCommand(params);
+      await s3.send(command);
+      // Construct file URL
+      const thumbnail = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${objectKey}`;
+     const data = {...bookData, thumbnail, notes:[]}
+      return await createBookInRepo(data)
+    }
+    catch(error) {
+      throw new Error('File upload failed')
+    }
+    finally {
+      // Cleanup the temporary file
+      if (file?.path) {
+        fs.unlink(file.path, (err) => {
+            if (err) {
+                console.error(`Error deleting temporary file at ${file.path}:`, err);
+            } else {
+                console.log(`Temporary file ${file.path} deleted.`);
+            }
+        });
+      }
+    }
   }
 
   public async updateBook(id: string, bookData: Partial<Book>): Promise<Book | null> {
