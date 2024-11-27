@@ -1,12 +1,25 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Request, type Response, type Router } from "express";
 import BookController from "./bookController";
+import { addBookSchema, fileSchema } from "./bookModel";
+import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
+import multer from "multer";
+import fs from "fs";
 
 export const bookRouter: Router = express.Router();
 const bookController = new BookController();
 
 // Define the OpenAPI registry for books
 export const bookRegistry = new OpenAPIRegistry();
+
+// Ensure the "uploads" directory exists
+const uploadsDir = "uploads";
+
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const upload = multer({ dest: uploadsDir });
 
 // Existing route definitions...
 
@@ -156,11 +169,34 @@ bookRegistry.registerPath({
   },
 });
 
+
+bookRegistry.registerPath({
+  method: "post",
+  path: "/",
+  tags: ["Books"],
+  parameters: [
+    {
+      name: "file",
+      in: "path",
+      required: true,
+      schema: { type: "string" },
+      description: "Unique identifier for the photo",
+    },
+  ],
+  request: {
+    body: {
+      content: {"multipart/form-data": {schema: fileSchema,},},
+    },
+  },
+  responses: createApiResponse(addBookSchema,"Book Added Successfully"),
+});
 // Existing routes...
+
+bookRouter.post("/add-book",upload.single("file"),bookController.createBook);
 
 bookRouter.get("/", (req: Request, res: Response) => bookController.getBooks(req, res));
 bookRouter.get("/:id", (req: Request, res: Response) => bookController.getBookById(req, res));
-bookRouter.post("/", (req: Request, res: Response) => bookController.createBook(req, res));
+//bookRouter.post("/", (req: Request, res: Response) => bookController.createBook(req, res));
 bookRouter.put("/:id", (req: Request, res: Response) => bookController.updateBook(req, res));
 bookRouter.delete("/:id", (req: Request, res: Response) => bookController.deleteBook(req, res));
 

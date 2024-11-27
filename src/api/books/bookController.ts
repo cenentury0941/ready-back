@@ -91,9 +91,15 @@ class BookController {
   public async createBook(req: Request, res: Response): Promise<void> {
     try {
       const bookData = req.body;
-      const newBook = await this.bookService.createBook(bookData);
-      res.status(201).json(newBook);
+      if (!req.body.author || !req.body.title ) {
+        res.status(400).json({ error: "Author , and title required" });
+        return;
+      }
+      const file = req.file;
+      await BookService.createBook(bookData, file);
+      res.status(201).json({ message: "Book added successfully"});
     } catch (error) {
+      console.log(error)
       res.status(500).json({ error: "Failed to create book" });
     }
   }
