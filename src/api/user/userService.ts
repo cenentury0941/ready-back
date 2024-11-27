@@ -66,14 +66,14 @@ export class UserService {
     }
   }
 
-  async uploadPhoto(photoId: string, file: any): Promise<ServiceResponse<{ url: string } | null>> {
+  async uploadPhoto(email: string, file: any): Promise<ServiceResponse<{ url: string } | null>> {
     try {
       if (!file) {
           return ServiceResponse.failure("No file provided", null, StatusCodes.INTERNAL_SERVER_ERROR);
       }
 
       // S3 object key
-      const userName = photoId.split('@')[0];
+      const userName = email.split('@')[0];
       const objectKey = `${userName}.png`;
 
       // Check if the object already exists in S3
