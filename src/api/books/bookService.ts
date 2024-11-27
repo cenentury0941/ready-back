@@ -56,8 +56,9 @@ class BookService {
       const command = new PutObjectCommand(params);
       await s3.send(command);
       // Construct file URL
-      const thumbnailUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${objectKey}`;
-      await createBookInRepo(bookData, thumbnailUrl)
+      const thumbnail = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${objectKey}`;
+     const data = {...bookData, thumbnail, notes:[]}
+      return await createBookInRepo(data)
     }
     catch(error) {
       throw new Error('File upload failed')

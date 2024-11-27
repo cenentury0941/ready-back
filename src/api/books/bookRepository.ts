@@ -174,17 +174,13 @@ export const deleteNoteFromBook = async (bookId: string, noteIndex: number): Pro
 };
 
 export const createBookInRepo = async (  
-  bookData: Partial<Book>, thumbnailUrl: string
+  bookData: Book
 ): Promise<any> => {
 
   const { client, collection } = await connectToDatabase();
   try {
-    const { title, author,about,qty,notes = []} = bookData;
-    const query = { title: title, author: author };
-    const update = { $set: { thumbnail: thumbnailUrl, about : about, qty: qty, notes: notes}};
-    const options = { upsert: true };
-    const resposne =  await collection.updateOne(query, update, options);
-    return {title, author, thumbnail:thumbnailUrl, about, qty, notes}
+    const resposne =  await collection.insertOne(bookData);
+    return {id:resposne.insertedId,...bookData};
   } catch(error) {
     console.error("Error adding Book", error);
     throw new Error("Failed to add book");

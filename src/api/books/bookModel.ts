@@ -7,12 +7,13 @@ export interface Note {
 }
 
 export interface Book {
-  title: string;
-  author: string;
-  thumbnailUrl: string;
-  about: string;
-  qty: number;
-  notes: Note[];
+  id?: string;
+  title?: string;
+  author?: string;
+  thumbnail: string;
+  about?: string;
+  qty?: number;
+  notes?: Note[];
 }
 
 export const fileSchema = z.object({

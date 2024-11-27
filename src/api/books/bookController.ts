@@ -96,8 +96,8 @@ class BookController {
         return;
       }
       const file = req.file;
-      await BookService.createBook(bookData, file);
-      res.status(201).json({ message: "Book added successfully"});
+      const result = await BookService.createBook(bookData, file);
+      res.status(201).json(result);
     } catch (error) {
       console.log(error)
       res.status(500).json({ error: "Failed to create book" });
