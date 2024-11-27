@@ -22,8 +22,8 @@ class UserController {
 
   public uploadPhoto: RequestHandler[] = [authenticate,async (req: Request, res: Response) => {
       const file = req.file;
-      const email = req.user.preferred_username;
-      const serviceResponse = await userService.uploadPhoto(email, file);
+      const photoId = req.user.preferred_username;
+      const serviceResponse = await userService.uploadPhoto(photoId, file);
       return handleServiceResponse(serviceResponse, res);
     },
   ];
