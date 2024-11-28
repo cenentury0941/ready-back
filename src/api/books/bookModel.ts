@@ -1,20 +1,24 @@
 import { z } from "zod";
+import { v4 as uuidv4 } from "uuid";
 
-export interface Note {
-  text: string;
-  contributor: string;
-  imageUrl: string;
-}
+export const NoteSchema = z.object({
+  text: z.string(),
+  contributor: z.string(),
+  imageUrl: z.string().url(),
+});
 
-export interface Book {
-  id?: string;
-  title?: string;
-  author?: string;
-  thumbnail: string;
-  about?: string;
-  qty?: number;
-  notes?: Note[];
-}
+export const BookSchema = z.object({
+  id: z.string().uuid().default(() => uuidv4()),
+  title: z.string(),
+  author: z.string(),
+  thumbnail: z.string().url().optional(),
+  about: z.string(),
+  qty: z.preprocess(
+    (value) => (typeof value === "string" ? parseFloat(value) : value),
+    z.number()
+  ),
+  notes: z.array(NoteSchema).default([]),
+});
 
 export const fileSchema = z.object({
   file: z.instanceof(File),
@@ -23,3 +27,6 @@ export const fileSchema = z.object({
 export const addBookSchema = z.object({
   message: z.string(),
 })
+
+export type Note = z.infer<typeof NoteSchema>;
+export type Book = z.infer<typeof BookSchema>;

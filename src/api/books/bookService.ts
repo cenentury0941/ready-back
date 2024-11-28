@@ -36,7 +36,7 @@ class BookService {
     return await deleteNoteFromBookInRepo(id, noteIndex);
   }
 
-  static async createBook(bookData: Partial<Book>, file:any): Promise<void> {
+  static async createBook(bookData: Book, file:any): Promise<Book> {
     try {
       if (!file) {
            ServiceResponse.failure("No file provided", null, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -57,7 +57,7 @@ class BookService {
       await s3.send(command);
       // Construct file URL
       const thumbnail = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${objectKey}`;
-     const data = {...bookData, thumbnail, notes:[]}
+      const data = {...bookData, thumbnail}
       return await createBookInRepo(data)
     }
     catch(error) {
