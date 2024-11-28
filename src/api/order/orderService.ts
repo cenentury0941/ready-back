@@ -2,7 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import { v4 as uuidv4 } from "uuid";
 import { ServiceResponse } from "../../common/models/serviceResponse";
 import { logger } from "../../server";
-import { updateBook } from "../books/bookRepository";
+import { getBookById, updateBook } from "../books/bookRepository";
 import { type Order, OrderSchema } from "./orderModel";
 import { OrderRepository } from "./orderRepository";
 
@@ -23,7 +23,17 @@ export class OrderService {
     try {
       const orders = await this.orderRepository.findByUserIdAsync(userId);
       if (!orders || orders.length === 0) {
-        return ServiceResponse.failure("No Orders found for user", null, StatusCodes.NOT_FOUND);
+        return ServiceResponse.success("No Orders found for user", []);
+      }
+      if(orders.length > 0) {
+        for(let i = 0; i < orders.length; i++) {
+          for(let j = 0; j < orders[i].items.length; j++) {
+            const book = await getBookById(orders[i].items[j].productId);
+            orders[i].items[j].author = book?.author;
+            orders[i].items[j].thumbnail = book?.thumbnail;
+            orders[i].items[j].title = book?.title;
+          }
+        }
       }
       return ServiceResponse.success<Order[]>("Orders found for user", orders);
     } catch (ex) {
@@ -60,8 +70,8 @@ export class OrderService {
         if (!bookId) {
           return ServiceResponse.failure("Product ID is required", null, StatusCodes.BAD_REQUEST);
         }
-        const quantity = orderData.items[i].quantity;
-        const isUpdated = await updateBook(bookId, { qty: quantity });
+        const book = await getBookById(bookId);
+        const isUpdated = await updateBook(bookId, { qty: book!.qty-1 });
         if (!isUpdated) {
           return ServiceResponse.failure("Insufficient quantity available", null, StatusCodes.BAD_REQUEST);
         }
