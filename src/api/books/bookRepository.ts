@@ -1,6 +1,6 @@
 import { config } from "dotenv";
 import { MongoClient, ObjectId } from "mongodb"; // Removed ModifyResult import
-import type { Book, Note } from "./bookModel";
+import { BookSchema, type Book, type Note } from "./bookModel";
 
 config();
 
@@ -175,18 +175,23 @@ export const deleteNoteFromBook = async (bookId: string, noteIndex: number): Pro
 
 export const createBookInRepo = async (  
   bookData: Book
-): Promise<any> => {
-
+): Promise<Book> => {
   const { client, collection } = await connectToDatabase();
   try {
-    const resposne =  await collection.insertOne(bookData);
-    return {id:resposne.insertedId,...bookData};
-  } catch(error) {
-    console.error("Error adding Book", error);
+    const parsedData = BookSchema.safeParse(bookData);
+    if (!parsedData.success) {
+      throw new Error("Invalid book data");
+    }
+    const response = await collection.insertOne(parsedData.data);
+    if (response.acknowledged) {
+      return parsedData.data;
+    } else {
+      throw new Error("Failed to add book");
+    }
+  } catch (error) {
+    console.error("Error adding book:", error);
     throw new Error("Failed to add book");
-  }
-  finally {
+  } finally {
     await client.close();
-   }
- 
+  }
 }
