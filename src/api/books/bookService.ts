@@ -4,7 +4,9 @@ import {
   addNoteToBook as addNoteToBookInRepo,
   getBookById as getBookByIdFromRepo,
   getBooks,
+  getBooksPendingApprovals,
   updateBook as updateBookInRepo,
+  deleteBook as deleteBookInRepo,
   updateNoteInBook as updateNoteInBookInRepo,
   deleteNoteFromBook as deleteNoteFromBookInRepo,
   createBookInRepo,
@@ -18,6 +20,10 @@ const s3 = new S3Client({region: 'us-east-1'});
 class BookService {
   public async getAllBooks(): Promise<Book[]> {
     return await getBooks();
+  }
+
+  public async getBooksWithPendingApprovals(): Promise<Book[]> {
+    return await getBooksPendingApprovals();
   }
 
   public async getBookById(id: string): Promise<Book | null> {
@@ -83,8 +89,8 @@ class BookService {
   }
 
   public async deleteBook(id: string): Promise<boolean> {
-    // Implement logic to delete a book
-    return false;
+    const response = await deleteBookInRepo(id);
+    return response;
   }
 }
 

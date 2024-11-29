@@ -5,6 +5,7 @@ import { addBookSchema, fileSchema } from "./bookModel";
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import multer from "multer";
 import fs from "fs";
+import verifyAzureToken from "@/middleware/authMiddleware";
 
 export const bookRouter: Router = express.Router();
 const bookController = new BookController();
@@ -192,7 +193,9 @@ bookRegistry.registerPath({
 });
 // Existing routes...
 
-bookRouter.post("/add-book",upload.single("file"),bookController.createBook);
+bookRouter.post("/add-book",verifyAzureToken, upload.single("file"),bookController.createBook);
+// Route for books with pending approvals
+bookRouter.get("/pending-approvals", (req: Request, res: Response) => bookController.getBooksPendingApproval(req, res));
 
 bookRouter.get("/", (req: Request, res: Response) => bookController.getBooks(req, res));
 bookRouter.get("/:id", (req: Request, res: Response) => bookController.getBookById(req, res));

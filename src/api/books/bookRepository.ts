@@ -18,7 +18,51 @@ const connectToDatabase = async () => {
 export const getBooks = async (): Promise<Book[]> => {
   const { client, collection } = await connectToDatabase();
   try {
-    const books = await collection.find().toArray();
+    const books = await collection
+      .find({
+        $or: [
+          { isApproved: { $ne: false } }, // Include books where isApproved is not false
+          { isApproved: { $exists: false } }, // Include books where isApproved field does not exist
+        ],
+      })
+      .toArray();
+    return books;
+  } catch (error) {
+    console.error("Error fetching books:", error);
+    throw new Error("Failed to fetch books");
+  } finally {
+    await client.close();
+  }
+};
+
+
+export const deleteBook = async (bookId: string): Promise<boolean> => {
+  if (!bookId || typeof bookId !== "string") {
+    throw new Error("Invalid book ID");
+  }
+
+  const { client, collection } = await connectToDatabase();
+  try {
+    const queryId = bookId.trim();
+    if (!queryId) {
+      throw new Error("Book ID cannot be empty");
+    }
+
+    const result = await collection.deleteOne({ id: queryId });
+    return result.deletedCount > 0; 
+  } catch (error) {
+    console.error("Error deleting book:", error);
+    throw new Error("Failed to delete book");
+  } finally {
+    await client.close(); 
+  }
+};
+
+
+export const getBooksPendingApprovals = async (): Promise<Book[]> => {
+  const { client, collection } = await connectToDatabase();
+  try {
+    const books = await collection.find({ isApproved: false }).toArray();
     return books;
   } catch (error) {
     console.error("Error fetching books:", error);

@@ -17,6 +17,16 @@ class BookController {
     }
   }
 
+  // Get books with pending approvals
+  public async getBooksPendingApproval(req: Request, res: Response): Promise<void> {
+    try {
+      const books = await this.bookService.getBooksWithPendingApprovals();
+      res.status(200).json(books);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch books with pending approvals" });
+    }
+  }
+
   public async getBookById(req: Request, res: Response): Promise<void> {
     try {
       const bookId = req.params.id;
@@ -95,6 +105,7 @@ class BookController {
         res.status(400).json({ error: "Author , and title required" });
         return;
       }
+      bookData.isApproved = req.user?.roles?.includes("Admin.Write") || false;
       const file = req.file;
       const result = await BookService.createBook(bookData, file);
       res.status(201).json(result);
@@ -124,7 +135,7 @@ class BookController {
       const bookId = req.params.id;
       const isDeleted = await this.bookService.deleteBook(bookId);
       if (isDeleted) {
-        res.status(204).send();
+        res.status(200).json({message: "Book deleted successfully"});
       } else {
         res.status(404).json({ error: "Book not found" });
       }
@@ -132,6 +143,7 @@ class BookController {
       res.status(500).json({ error: "Failed to delete book" });
     }
   }
+
 }
 
 export default BookController;
