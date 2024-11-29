@@ -105,6 +105,8 @@ class BookController {
         res.status(400).json({ error: "Author , and title required" });
         return;
       }
+      bookData.emailId = req.user?.preferred_username;
+      bookData.addedBy = req.user?.name;
       bookData.isApproved = req.user?.roles?.includes("Admin.Write") || false;
       const file = req.file;
       const result = await BookService.createBook(bookData, file);

@@ -20,6 +20,7 @@ export const BookSchema = z.object({
   notes: z.array(NoteSchema).default([]),
   isApproved: z.boolean().default(false),
   addedBy: z.string().optional(),
+  emailId: z.string().optional(),
 });
 
 export const fileSchema = z.object({
