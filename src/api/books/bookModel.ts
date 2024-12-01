@@ -21,6 +21,7 @@ export const BookSchema = z.object({
   isApproved: z.boolean().default(false),
   addedBy: z.string().optional(),
   emailId: z.string().optional(),
+  userImageUrl: z.string().url().optional(),
 });
 
 export const fileSchema = z.object({

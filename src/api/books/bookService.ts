@@ -50,6 +50,10 @@ class BookService {
       const thumbnail_name = (bookData.title?.replace(/ /g, '_'));
       const objectKey =  `books/thumbnails/${thumbnail_name}.png`;
       const fileContent = fs.readFileSync(file.path);
+
+      const userName = bookData?.emailId?.split('@')[0];
+      const userImageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${userName}.png`;
+      bookData.userImageUrl = userImageUrl;
     
       const params = {
         Bucket: process.env.S3_BUCKET_NAME,
