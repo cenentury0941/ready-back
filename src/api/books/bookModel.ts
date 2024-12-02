@@ -18,6 +18,10 @@ export const BookSchema = z.object({
     z.number()
   ),
   notes: z.array(NoteSchema).default([]),
+  isApproved: z.boolean().default(false),
+  addedBy: z.string().optional(),
+  emailId: z.string().optional(),
+  userImageUrl: z.string().url().optional(),
 });
 
 export const fileSchema = z.object({

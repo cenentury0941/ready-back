@@ -4,7 +4,9 @@ import {
   addNoteToBook as addNoteToBookInRepo,
   getBookById as getBookByIdFromRepo,
   getBooks,
+  getBooksPendingApprovals,
   updateBook as updateBookInRepo,
+  deleteBook as deleteBookInRepo,
   updateNoteInBook as updateNoteInBookInRepo,
   deleteNoteFromBook as deleteNoteFromBookInRepo,
   createBookInRepo,
@@ -18,6 +20,10 @@ const s3 = new S3Client({region: 'us-east-1'});
 class BookService {
   public async getAllBooks(): Promise<Book[]> {
     return await getBooks();
+  }
+
+  public async getBooksWithPendingApprovals(): Promise<Book[]> {
+    return await getBooksPendingApprovals();
   }
 
   public async getBookById(id: string): Promise<Book | null> {
@@ -44,6 +50,10 @@ class BookService {
       const thumbnail_name = (bookData.title?.replace(/ /g, '_'));
       const objectKey =  `books/thumbnails/${thumbnail_name}.png`;
       const fileContent = fs.readFileSync(file.path);
+
+      const userName = bookData?.emailId?.split('@')[0];
+      const userImageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${userName}.png`;
+      bookData.userImageUrl = userImageUrl;
     
       const params = {
         Bucket: process.env.S3_BUCKET_NAME,
@@ -83,8 +93,8 @@ class BookService {
   }
 
   public async deleteBook(id: string): Promise<boolean> {
-    // Implement logic to delete a book
-    return false;
+    const response = await deleteBookInRepo(id);
+    return response;
   }
 }
 
