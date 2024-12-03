@@ -119,6 +119,7 @@ class BookController {
 
   public async updateBook(req: Request, res: Response): Promise<void> {
     try {
+
       const bookId = req.params.id;
       const bookData = req.body;
       const updatedBook = await this.bookService.updateBook(bookId, bookData);
@@ -137,7 +138,7 @@ class BookController {
       const bookId = req.params.id;
       const isDeleted = await this.bookService.deleteBook(bookId);
       if (isDeleted) {
-        res.status(200).json({message: "Book deleted successfully"});
+        res.status(204).send({message: "Book Deleted Successfully"});
       } else {
         res.status(404).json({ error: "Book not found" });
       }

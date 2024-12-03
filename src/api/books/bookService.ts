@@ -10,6 +10,7 @@ import {
   updateNoteInBook as updateNoteInBookInRepo,
   deleteNoteFromBook as deleteNoteFromBookInRepo,
   createBookInRepo,
+  deleteBookInRepo,
 } from "./bookRepository";
 import { StatusCodes } from "http-status-codes";
 import fs from "fs";
@@ -92,9 +93,9 @@ class BookService {
     return updatedBook;
   }
 
-  public async deleteBook(id: string): Promise<boolean> {
-    const response = await deleteBookInRepo(id);
-    return response;
+  public async deleteBook(id: string): Promise<Boolean> {
+    const deleteBook:Boolean = await deleteBookInRepo(id)
+    return deleteBook;
   }
 }
 
