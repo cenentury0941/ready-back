@@ -1,5 +1,6 @@
 import { handleServiceResponse } from "@/common/utils/httpHandlers";
 import type { Request, RequestHandler, Response } from "express";
+import { getBookById } from "../books/bookRepository";
 import { OrderRepository } from "./orderRepository";
 import { orderService } from "./orderService";
 
@@ -30,8 +31,22 @@ class OrderController {
 
   public getAllOrders: RequestHandler = async (_req: Request, res: Response) => {
     const orders = await orderRepository.findAllAsync();
+    for (let i = 0; i < orders.length; i++) {
+      const items = orders[i].items;
+      const updateItems = [];
+      for (let j = 0; j < items.length; j++) {
+        const item = items[j];
+        const book = await getBookById(item.productId);
+        updateItems.push({
+          ...item,
+          ...book,
+        });
+      }
+      orders[i].items = updateItems;
+    }
     res.status(200).json(orders);
   };
+
   public updateOrderStatus: RequestHandler = async (req: Request, res: Response) => {
     const orderId = req.params.id;
     const { status } = req.body;
