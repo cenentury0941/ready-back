@@ -35,7 +35,7 @@ export class EmailService {
               <html>
                 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
                   <h2>Book Approval Request</h2>
-                  <p>${userName} has recommended a book named "${bookName}". Please click on the button below to review and approve the request.</p>
+                  <p>${userName} has recommended a book named "${bookName}". Please review and approve the request.</p>
                   <a href="https://ready.presidio.com/admin/approvals" 
                      style="display: inline-block; padding: 10px 20px; margin-top: 10px; color: white; text-decoration: none; background-color: #007BFF; border-radius: 5px;">
                     View Book
