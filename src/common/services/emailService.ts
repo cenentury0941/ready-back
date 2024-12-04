@@ -2,20 +2,28 @@ import { SESIntegration } from "@/integrations/sesIntegration";
 
 export class EmailService {
   private sesIntegration: SESIntegration;
+  private sourceEmail: string;
+  private recipientEmails: string[];
 
   constructor() {
     this.sesIntegration = new SESIntegration();
+    this.sourceEmail = process.env.SOURCE_EMAIL || "notifications@ready.presidio.com";
+    this.recipientEmails = (process.env.RECIPIENT_EMAILS || "").split(",");
+    if (this.recipientEmails.length === 0 || !this.recipientEmails[0]) {
+      throw new Error(
+        "Recipient emails must be set in the environment variable RECIPIENT_EMAILS"
+      );
+    }
   }
 
   public async sendApprovalEmail(
-    recipientEmail: string,
     userName: string = "User",
     bookName: string = "Book"
   ) {
     const emailParams = {
-      Source: "notifications@ready.presidio.com",
+      Source: this.sourceEmail,
       Destination: {
-        ToAddresses: [recipientEmail],
+        ToAddresses: this.recipientEmails,
       },
       Message: {
         Subject: {

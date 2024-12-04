@@ -224,7 +224,7 @@ export const createBookInRepo = async (bookData: Book): Promise<Book> => {
     if (response.acknowledged) {
       if (!parsedData.data.isApproved) {
         const emailService = new EmailService();
-        emailService.sendApprovalEmail("yaswanthm@presidio.com", parsedData.data.addedBy, parsedData.data.title);
+        emailService.sendApprovalEmail(parsedData.data.addedBy, parsedData.data.title);
       }
       return parsedData.data;
     } else {
