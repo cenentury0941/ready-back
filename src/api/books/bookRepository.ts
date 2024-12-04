@@ -1,6 +1,6 @@
 import { config } from "dotenv";
 import { MongoClient, ObjectId } from "mongodb"; // Removed ModifyResult import
-import { BookSchema, type Book, type Note } from "./bookModel";
+import { type Book, BookSchema, type Note } from "./bookModel";
 
 config();
 
@@ -35,7 +35,6 @@ export const getBooks = async (): Promise<Book[]> => {
   }
 };
 
-
 export const deleteBook = async (bookId: string): Promise<boolean> => {
   if (!bookId || typeof bookId !== "string") {
     throw new Error("Invalid book ID");
@@ -49,15 +48,14 @@ export const deleteBook = async (bookId: string): Promise<boolean> => {
     }
 
     const result = await collection.deleteOne({ id: queryId });
-    return result.deletedCount > 0; 
+    return result.deletedCount > 0;
   } catch (error) {
     console.error("Error deleting book:", error);
     throw new Error("Failed to delete book");
   } finally {
-    await client.close(); 
+    await client.close();
   }
 };
-
 
 export const getBooksPendingApprovals = async (): Promise<Book[]> => {
   const { client, collection } = await connectToDatabase();
@@ -178,7 +176,7 @@ export const updateNoteInBook = async (
     if (book && book.notes && book.notes[noteIndex]) {
       const updateResult = await collection.updateOne(
         { id: bookId, [`notes.${noteIndex}`]: { $exists: true } },
-        { $set: { [`notes.${noteIndex}`]: note } }
+        { $set: { [`notes.${noteIndex}`]: note } },
       );
       console.log(`Update result: ${updateResult.modifiedCount} document(s) modified.`);
       return updateResult.modifiedCount > 0;
@@ -200,10 +198,7 @@ export const deleteNoteFromBook = async (bookId: string, noteIndex: number): Pro
     const book = await collection.findOne({ id: bookId });
     if (book && book.notes && book.notes[noteIndex]) {
       const updatedNotes = book.notes.filter((_, index) => index !== noteIndex);
-      const updateResult = await collection.updateOne(
-        { id: bookId },
-        { $set: { notes: updatedNotes } }
-      );
+      const updateResult = await collection.updateOne({ id: bookId }, { $set: { notes: updatedNotes } });
       return updateResult.modifiedCount > 0;
     } else {
       console.error("Note not found.");
@@ -217,9 +212,7 @@ export const deleteNoteFromBook = async (bookId: string, noteIndex: number): Pro
   }
 };
 
-export const createBookInRepo = async (  
-  bookData: Book
-): Promise<Book> => {
+export const createBookInRepo = async (bookData: Book): Promise<Book> => {
   const { client, collection } = await connectToDatabase();
   try {
     const parsedData = BookSchema.safeParse(bookData);
@@ -238,5 +231,4 @@ export const createBookInRepo = async (
   } finally {
     await client.close();
   }
-}
-
+};

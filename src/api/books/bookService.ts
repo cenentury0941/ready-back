@@ -1,21 +1,21 @@
+import fs from "fs";
 import { ServiceResponse } from "@/common/models/serviceResponse";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { StatusCodes } from "http-status-codes";
 import type { Book } from "./bookModel";
 import {
   addNoteToBook as addNoteToBookInRepo,
+  createBookInRepo,
+  deleteBook as deleteBookInRepo,
+  deleteNoteFromBook as deleteNoteFromBookInRepo,
   getBookById as getBookByIdFromRepo,
   getBooks,
   getBooksPendingApprovals,
   updateBook as updateBookInRepo,
-  deleteBook as deleteBookInRepo,
   updateNoteInBook as updateNoteInBookInRepo,
-  deleteNoteFromBook as deleteNoteFromBookInRepo,
-  createBookInRepo,
 } from "./bookRepository";
-import { StatusCodes } from "http-status-codes";
-import fs from "fs";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
-const s3 = new S3Client({region: 'us-east-1'});
+const s3 = new S3Client({ region: "us-east-1" });
 
 class BookService {
   public async getAllBooks(): Promise<Book[]> {
@@ -34,7 +34,11 @@ class BookService {
     await addNoteToBookInRepo(id, note);
   }
 
-  public async updateNoteInBook(id: string, noteIndex: number, note: { text: string; contributor: string; imageUrl: string }): Promise<boolean> {
+  public async updateNoteInBook(
+    id: string,
+    noteIndex: number,
+    note: { text: string; contributor: string; imageUrl: string },
+  ): Promise<boolean> {
     return await updateNoteInBookInRepo(id, noteIndex, note);
   }
 
@@ -42,22 +46,22 @@ class BookService {
     return await deleteNoteFromBookInRepo(id, noteIndex);
   }
 
-  static async createBook(bookData: Book, file:any): Promise<Book> {
+  static async createBook(bookData: Book, file: any): Promise<Book> {
     try {
       if (!file) {
-           ServiceResponse.failure("No file provided", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        ServiceResponse.failure("No file provided", null, StatusCodes.INTERNAL_SERVER_ERROR);
       }
-      const thumbnail_name = (bookData.title?.replace(/ /g, '_'));
-      const objectKey =  `books/thumbnails/${thumbnail_name}.png`;
+      const thumbnail_name = bookData.title?.replace(/ /g, "_");
+      const objectKey = `books/thumbnails/${thumbnail_name}.png`;
       const fileContent = fs.readFileSync(file.path);
 
-      const userName = bookData?.emailId?.split('@')[0];
+      const userName = bookData?.emailId?.split("@")[0];
       const userImageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${userName}.png`;
       bookData.userImageUrl = userImageUrl;
-    
+
       const params = {
         Bucket: process.env.S3_BUCKET_NAME,
-        Key: objectKey, 
+        Key: objectKey,
         Body: fileContent,
         ContentType: file.mimetype,
       };
@@ -67,21 +71,19 @@ class BookService {
       await s3.send(command);
       // Construct file URL
       const thumbnail = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${objectKey}`;
-      const data = {...bookData, thumbnail}
-      return await createBookInRepo(data)
-    }
-    catch(error) {
-      throw new Error('File upload failed')
-    }
-    finally {
+      const data = { ...bookData, thumbnail };
+      return await createBookInRepo(data);
+    } catch (error) {
+      throw new Error("File upload failed");
+    } finally {
       // Cleanup the temporary file
       if (file?.path) {
         fs.unlink(file.path, (err) => {
-            if (err) {
-                console.error(`Error deleting temporary file at ${file.path}:`, err);
-            } else {
-                console.log(`Temporary file ${file.path} deleted.`);
-            }
+          if (err) {
+            console.error(`Error deleting temporary file at ${file.path}:`, err);
+          } else {
+            console.log(`Temporary file ${file.path} deleted.`);
+          }
         });
       }
     }
@@ -89,53 +91,50 @@ class BookService {
 
   public async updateBook(id: string, bookData: Partial<Book>, file: any): Promise<Book | null> {
     try {
-      
       if (file) {
-        const thumbnail_name = (bookData.title?.replace(/ /g, '_'));
-        const objectKey =  `books/thumbnails/${thumbnail_name}.png`;
+        const thumbnail_name = bookData.title?.replace(/ /g, "_");
+        const objectKey = `books/thumbnails/${thumbnail_name}.png`;
         const fileContent = fs.readFileSync(file.path);
-  
-        const userName = bookData?.emailId?.split('@')[0];
+
+        const userName = bookData?.emailId?.split("@")[0];
         const userImageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${userName}.png`;
         bookData.userImageUrl = userImageUrl;
-      
+
         const params = {
           Bucket: process.env.S3_BUCKET_NAME,
-          Key: objectKey, 
+          Key: objectKey,
           Body: fileContent,
           ContentType: file.mimetype,
         };
-  
+
         // Upload the file to S3
         const command = new PutObjectCommand(params);
         await s3.send(command);
         // Construct file URL
-       const thumbnail = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${objectKey}`;
-       const data = {...bookData, thumbnail}
-        return await updateBookInRepo(id,data)
+        const thumbnail = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${objectKey}`;
+        const data = { ...bookData, thumbnail };
+        return await updateBookInRepo(id, data);
       } else {
-      return await updateBookInRepo(id,bookData)
+        return await updateBookInRepo(id, bookData);
       }
-    } catch(error) {
-      throw new Error('File upload failed')
-    }
-    finally {
+    } catch (error) {
+      throw new Error("File upload failed");
+    } finally {
       // Cleanup the temporary file
       if (file?.path) {
         fs.unlink(file.path, (err) => {
-            if (err) {
-                console.error(`Error deleting temporary file at ${file.path}:`, err);
-            } else {
-                console.log(`Temporary file ${file.path} deleted.`);
-            }
+          if (err) {
+            console.error(`Error deleting temporary file at ${file.path}:`, err);
+          } else {
+            console.log(`Temporary file ${file.path} deleted.`);
+          }
         });
       }
     }
-    
   }
 
-  public async deleteBook(id: string): Promise<Boolean> {
-    const deleteBook:Boolean = await deleteBookInRepo(id)
+  public async deleteBook(id: string): Promise<boolean> {
+    const deleteBook: boolean = await deleteBookInRepo(id);
     return deleteBook;
   }
 }
