@@ -27,7 +27,7 @@ export class EmailService {
       },
       Message: {
         Subject: {
-          Data: "Book Approval Req - reg",
+          Data: "Ready - Book approval request",
         },
         Body: {
           Html: {
@@ -38,9 +38,8 @@ export class EmailService {
                   <p>${userName} has recommended a book named "${bookName}". Please click on the button below to review and approve the request.</p>
                   <a href="https://ready.presidio.com/admin/approvals" 
                      style="display: inline-block; padding: 10px 20px; margin-top: 10px; color: white; text-decoration: none; background-color: #007BFF; border-radius: 5px;">
-                    Take Me to Request
+                    View Book
                   </a>
-                  <p>Thank you.</p>
                 </body>
               </html>
             `,
