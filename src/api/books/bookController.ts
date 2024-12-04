@@ -122,7 +122,8 @@ class BookController {
 
       const bookId = req.params.id;
       const bookData = req.body;
-      const updatedBook = await this.bookService.updateBook(bookId, bookData);
+      const file = req.file;
+      const updatedBook = await this.bookService.updateBook(bookId, bookData,file);
       if (updatedBook) {
         res.status(200).json(updatedBook);
       } else {
