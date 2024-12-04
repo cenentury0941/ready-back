@@ -62,7 +62,7 @@ class BookController {
   public async updateNoteInBook(req: Request, res: Response): Promise<void> {
     try {
       const bookId = req.params.id;
-      const noteIndex = parseInt(req.params.noteIndex, 10);
+      const noteIndex = Number.parseInt(req.params.noteIndex, 10);
       const noteData = req.body;
 
       // Validate noteData
@@ -85,7 +85,7 @@ class BookController {
   public async deleteNoteFromBook(req: Request, res: Response): Promise<void> {
     try {
       const bookId = req.params.id;
-      const noteIndex = parseInt(req.params.noteIndex, 10);
+      const noteIndex = Number.parseInt(req.params.noteIndex, 10);
 
       const isDeleted = await this.bookService.deleteNoteFromBook(bookId, noteIndex);
       if (isDeleted) {
@@ -101,7 +101,7 @@ class BookController {
   public async createBook(req: Request, res: Response): Promise<void> {
     try {
       const bookData = req.body;
-      if (!req.body.author || !req.body.title ) {
+      if (!req.body.author || !req.body.title) {
         res.status(400).json({ error: "Author , and title required" });
         return;
       }
@@ -112,17 +112,17 @@ class BookController {
       const result = await BookService.createBook(bookData, file);
       res.status(201).json(result);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       res.status(500).json({ error: "Failed to create book" });
     }
   }
 
   public async updateBook(req: Request, res: Response): Promise<void> {
     try {
-
       const bookId = req.params.id;
       const bookData = req.body;
-      const updatedBook = await this.bookService.updateBook(bookId, bookData);
+      const file = req.file;
+      const updatedBook = await this.bookService.updateBook(bookId, bookData, file);
       if (updatedBook) {
         res.status(200).json(updatedBook);
       } else {
@@ -138,7 +138,7 @@ class BookController {
       const bookId = req.params.id;
       const isDeleted = await this.bookService.deleteBook(bookId);
       if (isDeleted) {
-        res.status(204).send({message: "Book Deleted Successfully"});
+        res.status(204).send({ message: "Book Deleted Successfully" });
       } else {
         res.status(404).json({ error: "Book not found" });
       }
@@ -146,7 +146,6 @@ class BookController {
       res.status(500).json({ error: "Failed to delete book" });
     }
   }
-
 }
 
 export default BookController;
