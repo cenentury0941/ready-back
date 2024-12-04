@@ -1,3 +1,4 @@
+import { EmailService } from "@/common/services/emailService";
 import { config } from "dotenv";
 import { MongoClient, ObjectId } from "mongodb"; // Removed ModifyResult import
 import { type Book, BookSchema, type Note } from "./bookModel";
@@ -221,6 +222,10 @@ export const createBookInRepo = async (bookData: Book): Promise<Book> => {
     }
     const response = await collection.insertOne(parsedData.data);
     if (response.acknowledged) {
+      if (!parsedData.data.isApproved) {
+        const emailService = new EmailService();
+        emailService.sendApprovalEmail("yaswanthm@presidio.com", parsedData.data.addedBy, parsedData.data.title);
+      }
       return parsedData.data;
     } else {
       throw new Error("Failed to add book");
