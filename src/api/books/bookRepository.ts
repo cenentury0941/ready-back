@@ -244,3 +244,21 @@ export const createBookInRepo = async (
     await client.close();
   }
 }
+
+export const deleteBookInRepo = async (bookId: string): Promise<Boolean> => {
+  const { client, collection } = await connectToDatabase();
+  try {
+
+    const result = await collection.deleteOne({ id: bookId });
+    if (result.deletedCount === 1) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.error("Error deleting book:", error);
+    throw new Error("Failed to delete book");
+  } finally {
+    await client.close();
+  }
+};
