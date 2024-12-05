@@ -8,6 +8,7 @@ import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { CreateUserSchema, fileSchema, GetUserSchema, uploadPhotoSchema, UserSchema } from "@/api/user/userModel";
 import { validateRequest } from "@/common/utils/httpHandlers";
 import { userController } from "./userController";
+import verifyAzureToken from "@/middleware/authMiddleware";
 
 export const userRegistry = new OpenAPIRegistry();
 export const userRouter: Router = express.Router();
@@ -55,17 +56,8 @@ userRouter.post("/", validateRequest(CreateUserSchema), userController.createUse
 
 userRegistry.registerPath({
   method: "post",
-  path: "/users/upload-photo/{photoId}",
+  path: "/users/upload-photo",
   tags: ["User"],
-  parameters: [
-    {
-      name: "photoId",
-      in: "path",
-      required: true,
-      schema: { type: "string" },
-      description: "Unique identifier for the photo",
-    },
-  ],
   request: {
     body: {
       content: {"multipart/form-data": {schema: fileSchema,},},
@@ -74,4 +66,4 @@ userRegistry.registerPath({
   responses: createApiResponse(uploadPhotoSchema,"Photo uploaded successfully"),
 });
 
-userRouter.post("/upload-photo/:photoId",upload.single("file"),userController.uploadPhoto);
+userRouter.post("/upload-photo",verifyAzureToken,upload.single("file"),userController.uploadPhoto);
