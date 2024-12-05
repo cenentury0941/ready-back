@@ -112,8 +112,12 @@ class BookController {
       const result = await BookService.createBook(bookData, file);
       res.status(201).json(result);
     } catch (error) {
-      console.log(error);
-      res.status(500).json({ error: "Failed to create book" });
+      const err = error as Error;
+      if (err.message === "Book with the same title and author already exists") {
+        res.status(409).json({ error: err.message });
+      } else {
+        res.status(500).json({ error: "Failed to create book" });
+      }
     }
   }
 

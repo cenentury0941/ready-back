@@ -5,6 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import type { Book } from "./bookModel";
 import {
   addNoteToBook as addNoteToBookInRepo,
+  checkBookExistence,
   createBookInRepo,
   deleteBook as deleteBookInRepo,
   deleteNoteFromBook as deleteNoteFromBookInRepo,
@@ -48,6 +49,13 @@ class BookService {
 
   static async createBook(bookData: Book, file: any): Promise<Book> {
     try {
+
+      const isDuplicate = await checkBookExistence(bookData.title, bookData.author);
+      if (isDuplicate) {
+        console.log("Book already exists")
+        throw new Error("Book with the same title and author already exists");
+      }
+
       if (!file) {
         ServiceResponse.failure("No file provided", null, StatusCodes.INTERNAL_SERVER_ERROR);
       }
@@ -74,7 +82,12 @@ class BookService {
       const data = { ...bookData, thumbnail };
       return await createBookInRepo(data);
     } catch (error) {
-      throw new Error("File upload failed");
+      const err = error as Error;
+      if (err.message === "Book with the same title and author already exists") {
+        throw new Error(err.message);
+      } else {
+        throw new Error("File upload failed");
+      }
     } finally {
       // Cleanup the temporary file
       if (file?.path) {
