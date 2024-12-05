@@ -49,10 +49,8 @@ class BookService {
 
   static async createBook(bookData: Book, file: any): Promise<Book> {
     try {
-
       const isDuplicate = await checkBookExistence(bookData.title, bookData.author);
       if (isDuplicate) {
-        console.log("Book already exists")
         throw new Error("Book with the same title and author already exists");
       }
 
