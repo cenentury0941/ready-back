@@ -223,10 +223,10 @@ bookRegistry.registerPath({
 bookRouter.post("/add-book",verifyAzureToken, upload.single("file"),bookController.createBook);
 bookRouter.put("/:id",verifyAzureToken, upload.single("file"), (req: Request, res: Response) => bookController.updateBook(req, res));
 // Route for books with pending approvals
-bookRouter.get("/pending-approvals", (req: Request, res: Response) => bookController.getBooksPendingApproval(req, res));
+bookRouter.get("/pending-approvals",verifyAzureToken, (req: Request, res: Response) => bookController.getBooksPendingApproval(req, res));
 
-bookRouter.get("/", (req: Request, res: Response) => bookController.getBooks(req, res));
-bookRouter.get("/:id", (req: Request, res: Response) => bookController.getBookById(req, res));
+bookRouter.get("/",verifyAzureToken, (req: Request, res: Response) => bookController.getBooks(req, res));
+bookRouter.get("/:id",verifyAzureToken, (req: Request, res: Response) => bookController.getBookById(req, res));
 //bookRouter.post("/", (req: Request, res: Response) => bookController.createBook(req, res));
 bookRouter.delete("/:id", (req: Request, res: Response) => bookController.deleteBook(req, res));
 
