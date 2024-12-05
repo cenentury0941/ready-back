@@ -237,3 +237,19 @@ export const createBookInRepo = async (bookData: Book): Promise<Book> => {
     await client.close();
   }
 };
+
+export const checkBookExistence = async (title: string, author: string): Promise<boolean> => {
+  const { client, collection } = await connectToDatabase();
+  try {
+    const existingBook = await collection.findOne({
+      title: { $regex: new RegExp(`^${title}$`, "i") },
+      author: { $regex: new RegExp(`^${author}$`, "i") },
+    });
+    return !!existingBook;
+  } catch (error) {
+    console.error("Error validating book uniqueness:", error);
+    throw new Error("Failed to validate book uniqueness");
+  } finally {
+    await client.close();
+  }
+};
