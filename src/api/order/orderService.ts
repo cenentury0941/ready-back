@@ -71,6 +71,11 @@ export class OrderService {
           return ServiceResponse.failure("Product ID is required", null, StatusCodes.BAD_REQUEST);
         }
         const book = await getBookById(bookId);
+        
+        // Check book quantity before proceeding checkout
+        if (book!.qty < 1) {
+          return ServiceResponse.failure("Insufficient quantity available", null, StatusCodes.BAD_REQUEST);
+        }
         const isUpdated = await updateBook(bookId, { qty: book!.qty-1 });
         if (!isUpdated) {
           return ServiceResponse.failure("Insufficient quantity available", null, StatusCodes.BAD_REQUEST);
