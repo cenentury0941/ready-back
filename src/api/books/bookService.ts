@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "node:fs";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { StatusCodes } from "http-status-codes";

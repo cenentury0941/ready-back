@@ -1,18 +1,16 @@
 import { StatusCodes } from "http-status-codes";
 
+import fs from "node:fs";
 import type { User } from "@/api/user/userModel";
 import { UserRepository } from "@/api/user/userRepository";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { logger } from "@/server";
-import { S3Client, PutObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
-import fs from "fs";
+import { HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-
-const s3 = new S3Client({region: 'us-east-1'});
-
+const s3 = new S3Client({ region: "us-east-1" });
 
 export class UserService {
   private userRepository: UserRepository;
@@ -69,11 +67,11 @@ export class UserService {
   async uploadPhoto(photoId: string, file: any): Promise<ServiceResponse<{ url: string } | null>> {
     try {
       if (!file) {
-          return ServiceResponse.failure("No file provided", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        return ServiceResponse.failure("No file provided", null, StatusCodes.INTERNAL_SERVER_ERROR);
       }
 
       // S3 object key
-      const userName = photoId.split('@')[0];
+      const userName = photoId.split("@")[0];
       const objectKey = `${userName}.png`;
 
       // Check if the object already exists in S3
@@ -100,7 +98,7 @@ export class UserService {
       // S3 upload parameters
       const params = {
         Bucket: process.env.S3_BUCKET_NAME,
-        Key: objectKey, 
+        Key: objectKey,
         Body: fileContent,
         ContentType: file.mimetype,
       };
@@ -113,20 +111,18 @@ export class UserService {
       const url = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${objectKey}`;
 
       return ServiceResponse.success("Photo uploaded successfully", { url });
-
     } catch (error) {
       console.error("Error uploading photo:", error);
       return ServiceResponse.failure("Error uploading photo", null, 500);
-    }
-    finally {
+    } finally {
       // Cleanup the temporary file
       if (file?.path) {
         fs.unlink(file.path, (err) => {
-            if (err) {
-                console.error(`Error deleting temporary file at ${file.path}:`, err);
-            } else {
-                console.log(`Temporary file ${file.path} deleted.`);
-            }
+          if (err) {
+            console.error(`Error deleting temporary file at ${file.path}:`, err);
+          } else {
+            console.log(`Temporary file ${file.path} deleted.`);
+          }
         });
       }
     }

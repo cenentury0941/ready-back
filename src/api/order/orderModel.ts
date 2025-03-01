@@ -9,12 +9,14 @@ export const OrderSchema = z.object({
   fullName: z.string().openapi({ description: "Full name of the user" }),
   location: z.string().openapi({ description: "Location of the order" }),
   items: z
-    .array(z.object({ 
-      productId: z.string().openapi({ description: "Product ID" }),
-      thumbnail: z.string().openapi({ description: "Thumbnail of the product" }).optional(),
-      title: z.string().openapi({ description: "Title of the product" }).optional(),
-      author: z.string().openapi({ description: "Author of the product" }).optional()
-    }))
+    .array(
+      z.object({
+        productId: z.string().openapi({ description: "Product ID" }),
+        thumbnail: z.string().openapi({ description: "Thumbnail of the product" }).optional(),
+        title: z.string().openapi({ description: "Title of the product" }).optional(),
+        author: z.string().openapi({ description: "Author of the product" }).optional(),
+      }),
+    )
     .openapi({ description: "List of items" }),
   confirmationNumber: z.string().openapi({ description: "Confirmation number" }),
   status: z.string().openapi({ description: "Order status" }),

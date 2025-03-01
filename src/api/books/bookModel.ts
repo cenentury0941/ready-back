@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
+import { z } from "zod";
 
 export const NoteSchema = z.object({
   text: z.string(),
@@ -8,15 +8,15 @@ export const NoteSchema = z.object({
 });
 
 export const BookSchema = z.object({
-  id: z.string().uuid().default(() => uuidv4()),
+  id: z
+    .string()
+    .uuid()
+    .default(() => uuidv4()),
   title: z.string(),
   author: z.string(),
   thumbnail: z.string().url().optional(),
   about: z.string(),
-  qty: z.preprocess(
-    (value) => (typeof value === "string" ? parseFloat(value) : value),
-    z.number()
-  ),
+  qty: z.preprocess((value) => (typeof value === "string" ? Number.parseFloat(value) : value), z.number()),
   notes: z.array(NoteSchema).default([]),
   isApproved: z.boolean().default(false),
   addedBy: z.string().optional(),
@@ -25,12 +25,19 @@ export const BookSchema = z.object({
 });
 
 export const fileSchema = z.object({
-  file: z.instanceof(File),
-})
+  fieldname: z.string(),
+  originalname: z.string(),
+  encoding: z.string(),
+  mimetype: z.string(),
+  destination: z.string(),
+  filename: z.string(),
+  path: z.string(),
+  size: z.number(),
+});
 
 export const addBookSchema = z.object({
   message: z.string(),
-})
+});
 
 export type Note = z.infer<typeof NoteSchema>;
 export type Book = z.infer<typeof BookSchema>;

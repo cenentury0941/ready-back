@@ -1,14 +1,14 @@
+import fs from "node:fs";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Router } from "express";
-import { z } from "zod";
 import multer from "multer";
-import fs from "fs";
+import { z } from "zod";
 
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
-import { CreateUserSchema, fileSchema, GetUserSchema, uploadPhotoSchema, UserSchema } from "@/api/user/userModel";
+import { CreateUserSchema, GetUserSchema, UserSchema, fileSchema, uploadPhotoSchema } from "@/api/user/userModel";
 import { validateRequest } from "@/common/utils/httpHandlers";
-import { userController } from "./userController";
 import verifyAzureToken from "@/middleware/authMiddleware";
+import { userController } from "./userController";
 
 export const userRegistry = new OpenAPIRegistry();
 export const userRouter: Router = express.Router();
@@ -17,7 +17,7 @@ export const userRouter: Router = express.Router();
 const uploadsDir = "uploads";
 
 if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
+  fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
 const upload = multer({ dest: uploadsDir });
@@ -41,14 +41,13 @@ userRegistry.registerPath({
   responses: createApiResponse(UserSchema, "Success"),
 });
 
-
 userRouter.get("/:id", validateRequest(GetUserSchema), userController.getUser);
 
 userRegistry.registerPath({
   method: "post",
   path: "/users",
   tags: ["User"],
-  request: { body: { content: { "application/json": { schema: CreateUserSchema.shape.body } } }},
+  request: { body: { content: { "application/json": { schema: CreateUserSchema.shape.body } } } },
   responses: createApiResponse(UserSchema, "User created successfully"),
 });
 
@@ -60,10 +59,10 @@ userRegistry.registerPath({
   tags: ["User"],
   request: {
     body: {
-      content: {"multipart/form-data": {schema: fileSchema,},},
+      content: { "multipart/form-data": { schema: fileSchema } },
     },
   },
-  responses: createApiResponse(uploadPhotoSchema,"Photo uploaded successfully"),
+  responses: createApiResponse(uploadPhotoSchema, "Photo uploaded successfully"),
 });
 
-userRouter.post("/upload-photo",verifyAzureToken,upload.single("file"),userController.uploadPhoto);
+userRouter.post("/upload-photo", verifyAzureToken, upload.single("file"), userController.uploadPhoto);

@@ -174,7 +174,7 @@ export const updateNoteInBook = async (
   try {
     console.log(`Updating note at index ${noteIndex} for book ID ${bookId}`);
     const book = await collection.findOne({ id: bookId });
-    if (book && book.notes && book.notes[noteIndex]) {
+    if (book?.notes?.[noteIndex]) {
       const updateResult = await collection.updateOne(
         { id: bookId, [`notes.${noteIndex}`]: { $exists: true } },
         { $set: { [`notes.${noteIndex}`]: note } },
@@ -197,7 +197,7 @@ export const deleteNoteFromBook = async (bookId: string, noteIndex: number): Pro
   const { client, collection } = await connectToDatabase();
   try {
     const book = await collection.findOne({ id: bookId });
-    if (book && book.notes && book.notes[noteIndex]) {
+    if (book?.notes?.[noteIndex]) {
       const updatedNotes = book.notes.filter((_, index) => index !== noteIndex);
       const updateResult = await collection.updateOne({ id: bookId }, { $set: { notes: updatedNotes } });
       return updateResult.modifiedCount > 0;

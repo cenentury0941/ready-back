@@ -32,8 +32,15 @@ export const GetUserSchema = z.object({
 export const uploadPhotoSchema = z.object({
   message: z.string(),
   url: z.string(),
-})
+});
 
 export const fileSchema = z.object({
-  file: z.instanceof(File),
-})
+  fieldname: z.string(),
+  originalname: z.string(),
+  encoding: z.string(),
+  mimetype: z.string(),
+  destination: z.string(),
+  filename: z.string(),
+  path: z.string(),
+  size: z.number(),
+});

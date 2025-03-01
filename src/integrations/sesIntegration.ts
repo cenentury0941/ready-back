@@ -1,12 +1,11 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 
 export class SESIntegration {
-
   private sesClient: SESClient;
   constructor() {
     this.sesClient = new SESClient({});
   }
-  
+
   public async sendEmail(params: any) {
     const command = new SendEmailCommand(params);
     try {

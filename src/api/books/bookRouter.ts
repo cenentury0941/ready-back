@@ -1,13 +1,18 @@
+import fs from "node:fs";
+import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
+import { env } from "@/common/utils/envConfig";
+import verifyAzureToken from "@/middleware/authMiddleware";
+import devAuthenticate from "@/middleware/devAuthMiddleware";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Request, type Response, type Router } from "express";
-import BookController from "./bookController";
-import { addBookSchema, BookSchema, fileSchema } from "./bookModel";
-import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import multer from "multer";
-import fs from "fs";
-import verifyAzureToken from "@/middleware/authMiddleware";
+import BookController from "./bookController";
+import { BookSchema, addBookSchema, fileSchema } from "./bookModel";
 
 export const bookRouter: Router = express.Router();
+
+// Choose authentication middleware based on environment
+const authMiddleware = env.NODE_ENV === "development" ? devAuthenticate : verifyAzureToken;
 const bookController = new BookController();
 
 // Define the OpenAPI registry for books
@@ -17,7 +22,7 @@ export const bookRegistry = new OpenAPIRegistry();
 const uploadsDir = "uploads";
 
 if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
+  fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
 const upload = multer({ dest: uploadsDir });
@@ -170,7 +175,6 @@ bookRegistry.registerPath({
   },
 });
 
-
 bookRegistry.registerPath({
   method: "post",
   path: "/",
@@ -186,10 +190,10 @@ bookRegistry.registerPath({
   ],
   request: {
     body: {
-      content: {"multipart/form-data": {schema: fileSchema,},},
+      content: { "multipart/form-data": { schema: fileSchema } },
     },
   },
-  responses: createApiResponse(addBookSchema,"Book Added Successfully"),
+  responses: createApiResponse(addBookSchema, "Book Added Successfully"),
 });
 
 bookRegistry.registerPath({
@@ -213,20 +217,24 @@ bookRegistry.registerPath({
   ],
   request: {
     body: {
-      content: {"multipart/form-data": {schema: BookSchema,},},
+      content: { "multipart/form-data": { schema: BookSchema } },
     },
   },
-  responses: createApiResponse(BookSchema,"Book Updated Successfully"),
+  responses: createApiResponse(BookSchema, "Book Updated Successfully"),
 });
 // Existing routes...
 
-bookRouter.post("/add-book",verifyAzureToken, upload.single("file"),bookController.createBook);
-bookRouter.put("/:id",verifyAzureToken, upload.single("file"), (req: Request, res: Response) => bookController.updateBook(req, res));
+bookRouter.post("/add-book", authMiddleware, upload.single("file"), bookController.createBook);
+bookRouter.put("/:id", authMiddleware, upload.single("file"), (req: Request, res: Response) =>
+  bookController.updateBook(req, res),
+);
 // Route for books with pending approvals
-bookRouter.get("/pending-approvals",verifyAzureToken, (req: Request, res: Response) => bookController.getBooksPendingApproval(req, res));
+bookRouter.get("/pending-approvals", authMiddleware, (req: Request, res: Response) =>
+  bookController.getBooksPendingApproval(req, res),
+);
 
-bookRouter.get("/",verifyAzureToken, (req: Request, res: Response) => bookController.getBooks(req, res));
-bookRouter.get("/:id",verifyAzureToken, (req: Request, res: Response) => bookController.getBookById(req, res));
+bookRouter.get("/", authMiddleware, (req: Request, res: Response) => bookController.getBooks(req, res));
+bookRouter.get("/:id", authMiddleware, (req: Request, res: Response) => bookController.getBookById(req, res));
 //bookRouter.post("/", (req: Request, res: Response) => bookController.createBook(req, res));
 bookRouter.delete("/:id", (req: Request, res: Response) => bookController.deleteBook(req, res));
 
@@ -237,4 +245,6 @@ bookRouter.post("/:id/notes", (req: Request, res: Response) => bookController.ad
 bookRouter.put("/:id/notes/:noteIndex", (req: Request, res: Response) => bookController.updateNoteInBook(req, res));
 
 // Add the new route for deleting a note from a book
-bookRouter.delete("/:id/notes/:noteIndex", (req: Request, res: Response) => bookController.deleteNoteFromBook(req, res));
+bookRouter.delete("/:id/notes/:noteIndex", (req: Request, res: Response) =>
+  bookController.deleteNoteFromBook(req, res),
+);

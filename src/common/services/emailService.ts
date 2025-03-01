@@ -10,16 +10,11 @@ export class EmailService {
     this.sourceEmail = process.env.SOURCE_EMAIL || "notifications@ready.presidio.com";
     this.recipientEmails = (process.env.RECIPIENT_EMAILS || "").split(",");
     if (this.recipientEmails.length === 0 || !this.recipientEmails[0]) {
-      throw new Error(
-        "Recipient emails must be set in the environment variable RECIPIENT_EMAILS"
-      );
+      throw new Error("Recipient emails must be set in the environment variable RECIPIENT_EMAILS");
     }
   }
 
-  public async sendApprovalEmail(
-    userName: string = "User",
-    bookName: string = "Book"
-  ) {
+  public async sendApprovalEmail(userName = "User", bookName = "Book") {
     const emailParams = {
       Source: this.sourceEmail,
       Destination: {
@@ -45,7 +40,7 @@ export class EmailService {
             `,
           },
           Text: {
-            Data: `User has uploaded a book, and the request is pending. Please visit: https://ready.presidio.com/admin/approvals`,
+            Data: "User has uploaded a book, and the request is pending. Please visit: https://ready.presidio.com/admin/approvals",
           },
         },
       },

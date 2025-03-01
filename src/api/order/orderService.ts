@@ -25,9 +25,9 @@ export class OrderService {
       if (!orders || orders.length === 0) {
         return ServiceResponse.success("No Orders found for user", []);
       }
-      if(orders.length > 0) {
-        for(let i = 0; i < orders.length; i++) {
-          for(let j = 0; j < orders[i].items.length; j++) {
+      if (orders.length > 0) {
+        for (let i = 0; i < orders.length; i++) {
+          for (let j = 0; j < orders[i].items.length; j++) {
             const book = await getBookById(orders[i].items[j].productId);
             orders[i].items[j].author = book?.author;
             orders[i].items[j].thumbnail = book?.thumbnail;
@@ -71,12 +71,12 @@ export class OrderService {
           return ServiceResponse.failure("Product ID is required", null, StatusCodes.BAD_REQUEST);
         }
         const book = await getBookById(bookId);
-        
+
         // Check book quantity before proceeding checkout
         if (book!.qty < 1) {
           return ServiceResponse.failure("Insufficient quantity available", null, StatusCodes.BAD_REQUEST);
         }
-        const isUpdated = await updateBook(bookId, { qty: book!.qty-1 });
+        const isUpdated = await updateBook(bookId, { qty: book!.qty - 1 });
         if (!isUpdated) {
           return ServiceResponse.failure("Insufficient quantity available", null, StatusCodes.BAD_REQUEST);
         }
